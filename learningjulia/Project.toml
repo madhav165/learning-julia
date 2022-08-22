@@ -1,0 +1,4 @@
+name = "learningjulia"
+uuid = "bd12c2b0-0016-46cc-a2e5-4cb02bd12a85"
+authors = ["Madhav Kandukuri <madhav165@gmail.com>"]
+version = "0.1.0"
