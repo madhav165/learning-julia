@@ -13,3 +13,5 @@ route("/hello.txt") do
 end
 
 up(8001, async = false)
+Genie.Generator.newapp_webservice("MyGenieApp")
+Genie.Generator.newapp_mvc("SoC Estimator")
