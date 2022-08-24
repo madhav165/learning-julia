@@ -104,9 +104,25 @@ function getdata(img, x_start, y_start, x_end, y_end)
     # p = plot(x, y, seriestype = :scatter, markersize = 1, size=(1497,539))
     # return p
     # savefig(plot(x, y, seriestype = :scatter, markersize = 1, size=(1497,539)), "result.png")
-
+    
     res_df = DataFrame(x = x,y = y)
-    CSV.write("res.csv",res_df)
+
+    # res_df = res_df[3:end,:]
+    y_lag = res_df[1:end-1,:y]
+    pushfirst!(y_lag,first(res_df[:,:y]))
+    res_df[!,:y_diff] = res_df[:,:y] .- y_lag
+    x_lag = res_df[1:end-1,:x]
+    pushfirst!(x_lag,first(res_df[:,:x]))
+    res_df[!,:x_diff] = res_df[:,:x] .- x_lag
+    res_df[!, :cumulative_sum_y_diff] = cumsum(res_df[!, :y_diff])
+    res_df[!, :cumulative_sum_x_diff] = cumsum(res_df[!, :x_diff])
+    res_df[!,:slope] = res_df[:,:cumulative_sum_y_diff] ./ res_df[:,:cumulative_sum_x_diff]
+    res_df[1,:slope] = 0
+    res_df[!,:wh_per_km] = 125 .+ 5*(res_df[:,:slope])
+    res_df[!,:soc_used] = (res_df[:,:cumulative_sum_x_diff] .* res_df[:,:wh_per_km]) ./ 40200
+    # print(res_df[1:5,:])
+
+    # CSV.write("res.csv",res_df)
     return res_df
     
 end

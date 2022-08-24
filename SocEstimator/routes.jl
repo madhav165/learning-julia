@@ -37,17 +37,29 @@ route("/", method = POST) do
     img = ImageMagick.readblob(raw.data)
     df = EdgeDetector.getdata(img, x_start, y_start, x_end, y_end)
     savefig(plot(df[:,:x], df[:,:y], seriestype = :scatter, markersize = 1, size=(1497,539)), "result.png")
+    savefig(plot(df[:,:x], df[:,:soc_used], seriestype = :scatter, markersize = 1, size=(1497,539)), "soc_result.png")
+    savefig(plot(df[:,:x], df[:,:wh_per_km], seriestype = :scatter, markersize = 1, size=(1497,539)), "whpkm_result.png")
     
     data_original = Base64.base64encode(raw.data)
 
     image_stream = open("result.png") # This opens a file, but you can just as well use a in-memory buffer
     data_digitized = Base64.base64encode(image_stream)
+
+    whpkm_image_stream = open("whpkm_result.png") # This opens a file, but you can just as well use a in-memory buffer
+    data_whpkm = Base64.base64encode(whpkm_image_stream)
+
+    soc_image_stream = open("soc_result.png") # This opens a file, but you can just as well use a in-memory buffer
+    data_soc = Base64.base64encode(soc_image_stream)
     
     html("""
     <h4>Original version</h4>
     <img src="data:image/png;base64,$(data_original)"  alt="Original version" width="1497" height="539">
     <h4>Digitized version</h4>
-    <img src="data:image/png;base64,$(data_digitized)" alt="Digitized version" width="1497" height="539">""")
+    <img src="data:image/png;base64,$(data_digitized)" alt="Digitized version" width="1497" height="539">
+    <h4>Wh per km</h4>
+    <img src="data:image/png;base64,$(data_whpkm)" alt="Digitized version" width="1497" height="539">
+    <h4>SoC used</h4>
+    <img src="data:image/png;base64,$(data_soc)" alt="Digitized version" width="1497" height="539">""")
     # sprint(show, "text/html", p)
   else
     "No file uploaded"
@@ -61,7 +73,7 @@ route("/", method = POST) do
 #     # html(getdata(filespayload(:yourfile)))
 #     # stat(filename(filespayload(:yourfile)))
 #   else
-#     "No file uploaded"
+#     "No file upload ed"
 #   end
 end
 
