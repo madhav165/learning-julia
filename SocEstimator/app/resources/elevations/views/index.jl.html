@@ -1,0 +1,10 @@
+<h1 class="display-1 text-center">Random elevation</h1>
+<%
+if ! isempty(elevations)
+  for_each(elevations) do elevation
+    partial(joinpath(Genie.config.path_resources, "elevations", "views", "_elevation.jl.html"), elevation = elevation)
+  end
+else
+  partial(joinpath(Genie.config.path_resources, "elevations", "views", "_no_results.jl.html"))
+end
+%>
