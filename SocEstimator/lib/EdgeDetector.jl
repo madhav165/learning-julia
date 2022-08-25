@@ -71,8 +71,8 @@ function getdata(img, x_start, y_start, x_end, y_end)
     maximum(x_count[:,:n])
     x_axis = x_count[findfirst(x -> x==maximum(x_count[:,:n]),x_count[:,:n]),:y]
 
-    two_df = filter(row -> row.x > maximum(y_axis)+3 
-                && row.y > maximum(x_axis)+3, one_df)
+    two_df = filter(row -> row.x > maximum(y_axis)+5 
+                && row.y > maximum(x_axis)+5, one_df)
 
     y_std = combine(groupby(two_df, :x), :y => std)
     y_mean = combine(groupby(two_df, :x), :y => mean)
