@@ -115,7 +115,7 @@ function getdata(img, x_start, y_start, x_end, y_end, way, bat_cap, x_end_return
         maximum(x_count[:,:n])
         x_axis = x_count[findfirst(x -> x==maximum(x_count[:,:n]),x_count[:,:n]),:y]
 
-        two_df = filter(row -> row.x > maximum(y_axis)+5 
+        two_df = filter(row -> row.x > maximum(y_axis)+5
                     && row.y > maximum(x_axis)+5, one_df)
 
         y_std = combine(groupby(two_df, :x), :y => std)
