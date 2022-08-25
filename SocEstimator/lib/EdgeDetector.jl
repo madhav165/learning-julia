@@ -47,7 +47,7 @@ function sujoy(img; four_connectivity=false)
     return grad
 end
 
-function getdata(img, x_start, y_start, x_end, y_end)
+function getdata(img, x_start, y_start, x_end, y_end, bat_cap)
 
     
     # img_path = "learningjulia/data/elevation4.png"
@@ -125,8 +125,8 @@ function getdata(img, x_start, y_start, x_end, y_end)
     res_df[!, :cumulative_sum_x_diff] = cumsum(res_df[!, :x_diff])
     res_df[!,:slope] = res_df[:,:cumulative_sum_y_diff] ./ res_df[:,:cumulative_sum_x_diff]
     res_df[1,:slope] = 0
-    res_df[!,:wh_per_km] = 125 .+ 5*(res_df[:,:slope])
-    res_df[!,:soc_used] = (res_df[:,:cumulative_sum_x_diff] .* res_df[:,:wh_per_km]) ./ 40200
+    res_df[!,:wh_per_km] = 119 .+ 5*(res_df[:,:slope])
+    res_df[!,:soc_used] = (res_df[:,:cumulative_sum_x_diff] .* res_df[:,:wh_per_km]) ./ (bat_cap * 1000 * 0.95)
     # print(res_df[1:5,:])
 
     # CSV.write("res.csv",res_df)

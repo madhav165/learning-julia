@@ -15,8 +15,12 @@ form = """
   <label for="y_end">Y right:</label>
   <input type="number" id="y_end" name="y_end"><br/><br/>
 
+  <label for="batcap">Battery capacity:</label>
+  <input type="number" id="batcap" name="batcap" value=40.5>kW<br/><br/>
+
   <input type="file" name="yourfile" /><br/><br/>
   <input type="submit" value="Submit" />
+
 </form>
 """
 
@@ -33,9 +37,10 @@ route("/", method = POST) do
     x_end = parse(Int64, postpayload(:x_end))
     y_start = parse(Int64, postpayload(:y_start))
     y_end = parse(Int64, postpayload(:y_end))
+    bat_cap = parse(Float64, postpayload(:batcap))
     raw = filespayload(:yourfile)
     img = ImageMagick.readblob(raw.data)
-    df = EdgeDetector.getdata(img, x_start, y_start, x_end, y_end)
+    df = EdgeDetector.getdata(img, x_start, y_start, x_end, y_end, bat_cap)
     savefig(plot(df[:,:x], df[:,:y], seriestype = :scatter, markersize = 1, size=(1497,539)), "result.png")
     savefig(plot(df[:,:x], df[:,:soc_used], seriestype = :scatter, markersize = 1, size=(1497,539)), "soc_result.png")
     savefig(plot(df[:,:x], df[:,:wh_per_km], seriestype = :scatter, markersize = 1, size=(1497,539)), "whpkm_result.png")
