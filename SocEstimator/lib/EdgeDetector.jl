@@ -65,14 +65,14 @@ function getdata(img, x_start, y_start, x_end, y_end)
 
     y_count = combine(groupby(one_df, :x), nrow => :n)
     maximum(y_count[:,:n])
-    y_axis = y_count[findall(x -> x==maximum(y_count[:,:n]),y_count[:,:n]),:x]
+    y_axis = y_count[findfirst(x -> x==maximum(y_count[:,:n]),y_count[:,:n]),:x]
 
     x_count = combine(groupby(one_df, :y), nrow => :n)
     maximum(x_count[:,:n])
-    x_axis = x_count[findall(x -> x==maximum(x_count[:,:n]),x_count[:,:n]),:y]
+    x_axis = x_count[findfirst(x -> x==maximum(x_count[:,:n]),x_count[:,:n]),:y]
 
-    two_df = filter(row -> row.x > maximum(y_axis) 
-                && row.y > maximum(x_axis), one_df)
+    two_df = filter(row -> row.x > maximum(y_axis)+3 
+                && row.y > maximum(x_axis)+3, one_df)
 
     y_std = combine(groupby(two_df, :x), :y => std)
     y_mean = combine(groupby(two_df, :x), :y => mean)
@@ -94,8 +94,15 @@ function getdata(img, x_start, y_start, x_end, y_end)
     x_intercept = x_end - (x_slope * last(two_df[:,:x]))
     y_intercept = y_end - (y_slope * last(two_df[:,:y]))
 
-    # x_factor = 1
-    # y_factor = 1
+    println(x_slope)
+    println(x_intercept)
+    println(y_slope)
+    println(y_intercept)
+
+    # x_slope = 1
+    # y_slope = 1
+    # x_intercept = 0
+    # y_intercept = 0
     x = ((two_df[:,:x]) .* (x_slope)) .+ x_intercept
     y = ((two_df[:,:y]) .* (y_slope)) .+ y_intercept
 
