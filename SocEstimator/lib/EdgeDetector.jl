@@ -47,7 +47,7 @@ function sujoy(img; four_connectivity=false)
     return grad
 end
 
-function getdata(img, x_start, y_start, x_end, y_end, bat_cap)
+function getdata(img, x_start, y_start, x_end, y_end, way, bat_cap, x_end_return, img_return)
 
     
     # img_path = "learningjulia/data/elevation4.png"
@@ -84,36 +84,78 @@ function getdata(img, x_start, y_start, x_end, y_end, bat_cap)
     two_df = combine(groupby(two_df, :x), :y => minimum)
     two_df = rename!(two_df, :y_minimum => :y)
 
-    # x_start = 0
-    # y_start = 900
-    # x_end = 332
-    # y_end = 3
-
     x_slope = (x_end - x_start)/(last(two_df[:,:x]) - first(two_df[:,:x]))
     y_slope = (y_end - y_start)/(last(two_df[:,:y]) - first(two_df[:,:y]))
     x_intercept = x_end - (x_slope * last(two_df[:,:x]))
     y_intercept = y_end - (y_slope * last(two_df[:,:y]))
 
-    println(x_slope)
-    println(x_intercept)
-    println(y_slope)
-    println(y_intercept)
-
-    # x_slope = 1
-    # y_slope = 1
-    # x_intercept = 0
-    # y_intercept = 0
     x = ((two_df[:,:x]) .* (x_slope)) .+ x_intercept
     y = ((two_df[:,:y]) .* (y_slope)) .+ y_intercept
 
-    # println(x_start, y_start, x_end, y_end)
-
-    # p = plot(x, y, seriestype = :scatter, markersize = 1, size=(1497,539))
-    # return p
-    # savefig(plot(x, y, seriestype = :scatter, markersize = 1, size=(1497,539)), "result.png")
-    
     res_df = DataFrame(x = x,y = y)
+    onward_len = size(res_df,1)
 
+    if way == 2
+        img_edge = sujoy(img_return, four_connectivity=true)
+        img_edge₀₁ = binarize(img_edge, Otsu()) # or use other binarization methods provided in ImageBinarization
+
+        img_matrix = Float32.(img_edge₀₁)
+        one_tpl = Tuple.(findall(x -> !iszero(x), img_matrix))
+        one_df = DataFrame(one_tpl)
+        one_df[:,1] = maximum(one_df[:,1]) .- one_df[:,1]
+        one_df = rename(one_df, :1 => :y)
+        one_df = rename(one_df, :2 => :x)
+        one_df = sort(one_df, [:x, order(:y)])
+
+        y_count = combine(groupby(one_df, :x), nrow => :n)
+        maximum(y_count[:,:n])
+        y_axis = y_count[findfirst(x -> x==maximum(y_count[:,:n]),y_count[:,:n]),:x]
+
+        x_count = combine(groupby(one_df, :y), nrow => :n)
+        maximum(x_count[:,:n])
+        x_axis = x_count[findfirst(x -> x==maximum(x_count[:,:n]),x_count[:,:n]),:y]
+
+        two_df = filter(row -> row.x > maximum(y_axis)+5 
+                    && row.y > maximum(x_axis)+5, one_df)
+
+        y_std = combine(groupby(two_df, :x), :y => std)
+        y_mean = combine(groupby(two_df, :x), :y => mean)
+        y_mean_std = outerjoin(y_mean, y_std, on = :x)
+        two_df = leftjoin(two_df, y_mean_std, on = :x)
+        two_df = filter(x -> !isnan(x[:y_std]) && x[:y] > x[:y_mean] - x[:y_std]
+        && x[:y] < x[:y_mean] + x[:y_std], two_df)
+
+        two_df = combine(groupby(two_df, :x), :y => minimum)
+        two_df = rename!(two_df, :y_minimum => :y)
+
+        
+        if img == img_return
+            two_df[:,:y] = reverse(two_df[:,:y])
+            x_slope = (x_end_return - x_start)/(last(two_df[:,:x]) - first(two_df[:,:x]))
+            y_slope = (y_start - y_end)/(last(two_df[:,:y]) - first(two_df[:,:y]))
+            x_intercept = x_end_return - (x_slope * last(two_df[:,:x]))
+            y_intercept = y_start - (y_slope * last(two_df[:,:y]))
+            x = ((two_df[:,:x]) .* (x_slope)) .+ x_intercept
+            y = ((two_df[:,:y]) .* (y_slope)) .+ y_intercept
+            x = x .+ maximum(res_df[:,:x])
+        else
+            # two_df[:,:y] = reverse(two_df[:,:y])
+            x_slope = (x_end_return - x_start)/(last(two_df[:,:x]) - first(two_df[:,:x]))
+            y_slope = (y_start - y_end)/(last(two_df[:,:y]) - first(two_df[:,:y]))
+            x_intercept = x_end_return - (x_slope * last(two_df[:,:x]))
+            y_intercept = y_start - (y_slope * last(two_df[:,:y]))
+            x = ((two_df[:,:x]) .* (x_slope)) .+ x_intercept
+            y = ((two_df[:,:y]) .* (y_slope)) .+ y_intercept
+            x = x .+ maximum(res_df[:,:x])
+            # reverse!(y)
+        end
+
+        
+        res_return_df = DataFrame(x = x,y = y)
+        res_df = vcat(res_df, res_return_df)
+    end
+
+    
     # res_df = res_df[3:end,:]
     y_lag = res_df[1:end-1,:y]
     pushfirst!(y_lag,first(res_df[:,:y]))
@@ -126,11 +168,10 @@ function getdata(img, x_start, y_start, x_end, y_end, bat_cap)
     res_df[!,:slope] = res_df[:,:cumulative_sum_y_diff] ./ res_df[:,:cumulative_sum_x_diff]
     res_df[1,:slope] = 0
     res_df[!,:wh_per_km] = 119 .+ 5*(res_df[:,:slope])
-    res_df[!,:soc_used] = (res_df[:,:cumulative_sum_x_diff] .* res_df[:,:wh_per_km]) ./ (bat_cap * 1000 * 0.95)
-    # print(res_df[1:5,:])
+    res_df[!,:soc_used] = (res_df[:,:cumulative_sum_x_diff] .* res_df[:,:wh_per_km]) ./ (bat_cap * 0.95)
 
     # CSV.write("res.csv",res_df)
-    return res_df
+    return res_df, onward_len
     
 end
 
