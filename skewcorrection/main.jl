@@ -10,14 +10,13 @@ module ImageSkewCorrection
         data = imrotate(img, deg2rad(angle))
         hist = sum(data, dims=2)
         score = sum((hist[2:end] .- hist[1:end-1]) .^ 2)
-        return hist, score
+        return score
     end
 
     function get_scores(angles::StepRange{Int64, Int64}, matrix::Matrix{Int64})
         scores = []
         Threads.@threads for angle in angles
-            find_score(matrix, Float64(angle))
-            hist, score = find_score(matrix, Float64(angle))
+            score = find_score(matrix, Float64(angle))
             push!(scores, score)
         end
         return scores
@@ -32,7 +31,7 @@ module ImageSkewCorrection
             
         δ = 1
         limit = 5
-        angles = -limit:δ:limit    
+        angles = -limit:δ:limit
 
         scores = get_scores(angles, matrix)
         best_score = maximum(scores)
