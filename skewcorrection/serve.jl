@@ -11,7 +11,6 @@ function testfun(request::HTTP.Request)
         open("./skewcorrection/skew_corrected_jl_serve.png") do io
             return HTTP.Response(read(io))
         end
-        # return HTTP.Response(200, "Bye")
     catch e
         return HTTP.Response(400, "Error: $e")
     end
