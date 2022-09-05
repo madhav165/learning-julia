@@ -1,5 +1,4 @@
 import sys
-
 import time
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,18 +11,18 @@ def find_score(arr, angle):
     hist = np.sum(data, axis=1)
     score = np.sum((hist[1:] - hist[:-1]) ** 2)
     return hist, score
-start = time.time()
-for i in range(100):
-    input_file = "./skewcorrection/original.png"
 
-    img = im.open(input_file)
+def remove_skew(img):
+    # input_file = "./skewcorrection/original.png"
+
+    # img = im.open(input_file)
 
     # convert to binary
     wd, ht = img.size
     pix = np.array(img.convert('1').getdata(), np.uint8)
     bin_img = 1 - (pix.reshape((ht, wd)) / 255.0)
-    plt.imshow(bin_img, cmap='gray')
-    plt.savefig('./skewcorrection/binary_py.png')
+    # plt.imshow(bin_img, cmap='gray')
+    # plt.savefig('./skewcorrection/binary_py.png')
 
     delta = 1
     limit = 5
@@ -40,7 +39,4 @@ for i in range(100):
     # correct skew
     data = inter.rotate(bin_img, best_angle, reshape=False, order=0)
     img = im.fromarray((255 * data).astype("uint8")).convert("RGB")
-    img.save('./skewcorrection/skew_corrected_py.png')
-
-end = time.time()
-print('Time taken: {}'.format(end-start))
+    img.save('./skewcorrection/skew_corrected_py_serve.png')

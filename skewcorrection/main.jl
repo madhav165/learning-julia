@@ -1,10 +1,10 @@
 module ImageSkewCorrection
 
-    using Images, ImageTransformations
+    using Images
 
-    function get_binary_image(img::Matrix{RGB{N0f8}}, threshold::Float64)
-        img_binary = (Gray.(img) .> threshold);
-    end
+    # function get_binary_image(img::Matrix{RGB{N0f8}}, threshold::Float64)
+    #     img_binary = (Gray.(img) .> threshold);
+    # end
 
     function find_score(img::Matrix{Int64}, angle::Float64)
         data = imrotate(img, deg2rad(angle))
@@ -15,7 +15,7 @@ module ImageSkewCorrection
 
     function get_scores(angles::StepRange{Int64, Int64}, matrix::Matrix{Int64})
         scores = []
-        Threads.@threads for angle in angles
+        for angle in angles
             score = find_score(matrix, Float64(angle))
             push!(scores, score)
         end
@@ -25,8 +25,9 @@ module ImageSkewCorrection
     function correct_img_skew(img)
         # img_path = "./skewcorrection/original.png"
         # img = load(img_path)
-        matrix = get_binary_image(img, 0.5)
-        matrix = 1 .- matrix
+        matrix = 1 .- (Gray.(img) .> threshold);
+        # matrix = get_binary_image(img, 0.5)
+        # matrix = 1 .- matrix
         # save("./skewcorrection/binary_jl.png", Gray.(matrix))
             
         δ = 1
@@ -39,7 +40,7 @@ module ImageSkewCorrection
         # best_score, best_index = findmax(scores)
         best_angle = angles[best_index]
         
-        print("Best angle: ", -best_angle)
+        # print("Best angle: ", -best_angle)
 
         rotated_img = imrotate(img, deg2rad(best_angle))
         return rotated_img

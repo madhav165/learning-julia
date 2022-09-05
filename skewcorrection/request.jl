@@ -1,17 +1,17 @@
 using HTTP
 
-url = "http://localhost:8081"
-img_path = "./skewcorrection/original.png"
 
-# @time for i in 1:100
-open(img_path) do io
-    headers = []
-    body = HTTP.Form([
-        "attachment" => HTTP.Multipart("original.png", io, "image/png")
-    ])
-    resp = HTTP.post(url, headers, body)
-    write("./skewcorrection/skew_corrected_jl_client.png", resp.body)
+function get_time()
+    url = "http://localhost:8081"
+    img_path = "./skewcorrection/original.png"
+    for i in 1:100
+    open(img_path) do io
+        resp = HTTP.post(url, [], io)
+        write("./skewcorrection/skew_corrected_jl_client.png", resp.body)
+    end
+    end
 end
-# end
+
+@time get_time()
 
 HTTP.get("http://localhost:8081")
