@@ -25,7 +25,7 @@ module ImageSkewCorrection
     function correct_img_skew(img)
         # img_path = "./skewcorrection/original.png"
         # img = load(img_path)
-        matrix = 1 .- (Gray.(img) .> threshold);
+        matrix = 1 .- (Gray.(img) .> 0.5);
         # matrix = get_binary_image(img, 0.5)
         # matrix = 1 .- matrix
         # save("./skewcorrection/binary_jl.png", Gray.(matrix))

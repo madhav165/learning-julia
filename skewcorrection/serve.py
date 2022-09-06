@@ -13,7 +13,7 @@ def hello_world():
         img = im.open(file)
         img.save(os.path.join('skewcorrection', 'original_serve_py.png'))
         remove_skew(img)
-        return send_file('skew_corrected_py_serve.png', mimetype='image/png', download_name='skew_corrected_py_client.png')
+        return send_file('skew_corrected_py_serve.png', mimetype='image/png', attachment_filename='skew_corrected_py_client.png')
     else:
         return 'Hello, World'
 
