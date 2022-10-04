@@ -19,8 +19,6 @@ end
 function send_welcome(contact)
     id = contact["id"]
     name = contact["first_name"]
-    println(id)
-    println(name)
 
     if "language_code" in keys(contact)
         lc = contact["language_code"]
@@ -28,12 +26,12 @@ function send_welcome(contact)
         lc = "en"
     end
     if lc=="en"
-        params = Dict("chat_id"=>id, "text"=>string("Ciao ", name, "! I'm Pizzabot 
+        params = Dict("chat_id"=>id, "text"=>string("Hello ", name, "! I'm Pizzabot 
         I'll help you prepare fabulous pizzas and focaccias!
-        Type / let's cook to get started and then follow the instructions.
+        Type /letscook to get started and then follow the instructions.
         Good job and good appetite !!"))
     else
-        params = Dict("chat_id"=>id, "text"=>string("Welcome ", name, " \nClick /cook to begin.."))
+        params = Dict("chat_id"=>id, "text"=>string("Welcome ", name, " \nClick /letscook to begin.."))
     end
     send_message(params)
 end
@@ -42,7 +40,7 @@ function ask_program(contact)
     id = contact["id"]
     buttons = [Dict("text"=>"pizza"), Dict("text"=>"focaccia")]
     reply_markup = Dict("keyboard"=>[buttons], "one_time_keyboard"=>true)
-    params = Dict("chat_id"=>id, "text"=>"Cosa vuoi cucinare? (pizza o focaccia)", "reply_markup"=>reply_markup)
+    params = Dict("chat_id"=>id, "text"=>"What do you want to cook? (pizza or focaccia)", "reply_markup"=>reply_markup)
     send_message(params)
 end
 
@@ -54,9 +52,9 @@ function ask_people(message)
         program = "pizza"
     end
 
-    params = Dict("chat_id"=>id, "text"=>string("Bene allora ti darò istruzioni per fare la ", program))
+    params = Dict("chat_id"=>id, "text"=>string("Well then I'll give you instructions to do the ", program))
     send_message(params)
-    params = Dict("chat_id"=>id, "text"=>string("per quante persone vuoi fare la ", program, "?"))
+    params = Dict("chat_id"=>id, "text"=>string("For how many people do you want to do the ", program, "?"))
     send_message(params)
     return program
 end
@@ -73,7 +71,7 @@ function read_people(message, state)
         send_recipe(message, people)
         return state + 1
     catch
-        params = Dict("chat_id"=>id, "text"=>string("Non ho capito. Per quante persone?"))
+        params = Dict("chat_id"=>id, "text"=>string("I have not understood. For how many people?"))
         send_message(params)
         return state
     end
@@ -92,12 +90,12 @@ end
 function send_pizza(id, people)
     pizza_recipe = [1000 100 500]
     recipe = pizza_recipe / 4. * people
-    params = Dict("chat_id"=>id, "text"=>string("Ecco le dosi per $(people) persone:\n
-    $(@sprintf("%.1f", recipe[1]/1000)) Kg di farina\n
-    $(@sprintf("%.1f", recipe[2])) ml di olio\n
-    $(@sprintf("%.1f", recipe[3])) ml di acqua\n
-    lievito q.b.\n
-    sale q.b.\n"))
+    params = Dict("chat_id"=>id, "text"=>string("Here are the doses for $(people) people:\n
+    $(@sprintf("%.1f", recipe[1]/1000)) Kg of flour\n
+    $(@sprintf("%.1f", recipe[2])) ml of oil\n
+    $(@sprintf("%.1f", recipe[3])) ml of water\n
+    yeast to taste\n
+    salt to taste\n"))
     send_message(params)
 end
 
@@ -108,14 +106,14 @@ function send_focaccia(id, people)
     number, rectangular_str, circular_str, rectangular, circular = get_teglia(sum(recipe))
 
 
-    params = Dict("chat_id"=>id, "text"=>string("Ecco le dosi per $(people) persone:\n
-    $(@sprintf("%.3f", recipe[1]/1000)) Kg di farina di Manitoba (W=280)\n
-    $(@sprintf("%.1f", recipe[2])) g di olio\n
-    $(@sprintf("%.1f", recipe[3])) ml di acqua\n
-    lievito q.b.\n
-    sale q.b.\n\n
-    Puoi usare $(circular_str) di diametro: $(@sprintf("%.1f", circular))cm\n
-    oppure $(rectangular_str) $(@sprintf("%.1f", rectangular[1])) cm X $(@sprintf("%.1f", rectangular[2])) cm"))
+    params = Dict("chat_id"=>id, "text"=>string("Here are the doses for $(people) people:\n
+    $(@sprintf("%.3f", recipe[1]/1000)) Kg of Manitoba flour (W = 280)\n
+    $(@sprintf("%.1f", recipe[2])) g of oil\n
+    $(@sprintf("%.1f", recipe[3])) ml of water\n
+    yeast to taste\n
+    salt to taste\n\n
+    You can use $(circular_str) in diameter: $(@sprintf("%.1f", circular))cm\n
+    or $(rectangular_str) $(@sprintf("%.1f", rectangular[1])) cm X $(@sprintf("%.1f", rectangular[2])) cm"))
     send_message(params)
 end
 
@@ -133,11 +131,11 @@ function get_teglia(impasto)
     circular = sqrt(area/pi)*2
 
     if number > 1
-        rectangular_str = "$(@sprintf("%d", number)) teglie rettangolari"
-        circular_str = "$(@sprintf("%d", number)) teglie circolari"
+        rectangular_str = "$(@sprintf("%d", number)) rectangular trays"
+        circular_str = "$(@sprintf("%d", number)) circular trays"
     else
-        rectangular_str = "una teglia rettangolare"
-        circular_str = "una teglia circolare"
+        rectangular_str = "a rectangular pan"
+        circular_str = "a circular pan"
     end
 
     return (number, rectangular_str, circular_str, rectangular, circular)
@@ -149,11 +147,9 @@ function send_bye(contact)
     if "language_code" in keys(contact)
         lc = contact["language_code"]
     else
-        lc = "it"
+        lc = "en"
     end
-    if lc=="it"
-        params = Dict("chat_id"=>id, "text"=>string("Buon appetito ", name, "!"))
-    else
+    if lc=="en"
         params = Dict("chat_id"=>id, "text"=>string("Enjoy your meal ", name, "!"))
     end
     send_message(params)
@@ -167,7 +163,7 @@ function parse_message(message)
     if (state == 0) | (message["message"]["text"]=="/start")
         send_welcome(message["message"]["from"])
         Backend.set_state(id, 1)
-    elseif (state == 1) | (message["message"]["text"]=="/cuciniamo")
+    elseif (state == 1) | (message["message"]["text"]=="/letscook")
         ask_program(message["message"]["from"])
         Backend.set_state(id, 2)
     elseif state == 2
