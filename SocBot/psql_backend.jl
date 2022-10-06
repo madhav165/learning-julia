@@ -49,15 +49,15 @@ function set_key(table, id, key, value)
 end
 
 function get_state(table, id)
-    return get_key("user", id,"state")
+    return get_key(table, id,"state")
 end
 
 function set_state(table, id, state)
-    set_key("user", id,"state", state)
+    set_key(table, id,"state", state)
 end
 
 function get_car(table, id)
-    return get_key("user", id, "car")
+    return get_key(table, id, "car")
 end
 
 function init_db()
@@ -65,9 +65,18 @@ function init_db()
 
     result = execute(conn, """
         CREATE TABLE IF NOT EXISTS $user_table (
-            id    integer PRIMARY KEY,
-            state   integer,
-            car varchar(30)
+            id integer PRIMARY KEY,
+            state  integer,
+            car varchar(100)
+        );
+    """)
+    println(Tables.columntable(result))
+
+    result = execute(conn, """
+        CREATE TABLE IF NOT EXISTS $travel_table (
+            id integer PRIMARY KEY,
+            origin varchar(200),
+            destination varchar(200)
         );
     """)
     println(Tables.columntable(result))
