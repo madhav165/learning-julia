@@ -1,0 +1,42 @@
+version: '1'
+services:
+  server:
+    build: .
+    image: socbot-julia
+    environment:
+    - DATABASE_URL="pgsql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/?sslmode=prefer"
+    - TELEGRAM_KEY=${TELEGRAM_KEY}
+    - POSTGRES_USER=${POSTGRES_USER}
+    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    - POSTGRES_DB=${POSTGRES_DB}
+    - USER_TABLE=${USER_TABLE}
+    - TRAVEL_TABLE=${TRAVEL_TABLE}
+    depends_on:
+      - db
+    links:
+      - "db:database"
+    restart: unless-stopped
+    networks:
+      - soc_net
+  db:
+    image: postgres
+    expose:
+      - "5432"
+    ports:
+     - "5432:5432"
+    environment:
+    - POSTGRES_USER=${POSTGRES_USER}
+    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    - POSTGRES_DB=${POSTGRES_DB}
+    - USER_TABLE=${USER_TABLE}
+    - TRAVEL_TABLE=${TRAVEL_TABLE}
+    restart: on-failure
+    networks:
+    - soc_net
+
+networks:
+  soc_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.16.238.0/24"
