@@ -63,14 +63,22 @@ function ask_destination(message)
     return origin
 end
 
-function summarize_trip(message)
+function finalize_trip(message)
     id = message["from"]["id"]
     destination = message["text"]
     datetime = Dates.unix2datetime(message["date"])
-
-    params = Dict("chat_id"=>id, "text"=>string("You are headed to $destination"))
-    Telegram.send_message(params)
     return datetime, destination
+end
+
+function summarize_trip(message)
+    id = message["from"]["id"]
+    car = Backend.get_key("user", id, "car")
+    current_trip_id = Backend.get_key("user", id, "current_trip_id")
+    origin = Backend.get_key("trip", current_trip_id, "origin")
+    destination = Backend.get_key("trip", current_trip_id, "destination")
+    
+    params = Dict("chat_id"=>id, "text"=>string("Wish you a happy journey from $origin to $destination in your $car !!!"))
+    Telegram.send_message(params)
 end
 
 function parse_message(message)
@@ -119,10 +127,11 @@ function parse_message(message)
         Backend.set_key("trip", current_trip_id, "origin", origin)
     elseif state == 5
         @info "sharing trip summary"
-        datetime, destination = summarize_trip(message["message"])
+        datetime, destination = finalize_trip(message["message"])
         current_trip_id = Backend.get_key("user", id, "current_trip_id")
         Backend.set_key("trip", current_trip_id, "datetime", datetime)
         Backend.set_key("trip", current_trip_id, "destination", destination)
+        summarize_trip(message["message"])
     end
 end
 
