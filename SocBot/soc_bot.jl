@@ -2,6 +2,9 @@ using Printf
 using JSON
 using Dates
 
+using DotEnv
+DotEnv.config()
+
 #include("white_backend.jl")
 include("psql_backend.jl")
 using Main.Backend
@@ -72,6 +75,7 @@ end
 
 function parse_message(message)
     id = message["message"]["from"]["id"]
+    update_id = message["update_id"]
     Backend.update_contact_list(message)
     state = Backend.get_state("user", id)
 
@@ -80,6 +84,8 @@ function parse_message(message)
         send_welcome(message["message"]["from"])
         Backend.set_state("user", id, 1)
     elseif message["message"]["text"]=="/plantrip"
+        Backend.update_trip_list(message)
+        Backend.set_key("user", id, "current_trip_id", parse(Int, string(id) * string(update_id)))
         if state <= 1
             car = Backend.get_car("user", id)
             if car === missing
@@ -109,12 +115,14 @@ function parse_message(message)
         @info "asking for destination"
         origin = ask_destination(message["message"])
         Backend.set_state("user", id, 5)
-        Backend.set_key("travel", id, "origin", origin)
+        current_trip_id = Backend.get_key("user", id, "current_trip_id")
+        Backend.set_key("trip", current_trip_id, "origin", origin)
     elseif state == 5
         @info "sharing trip summary"
         datetime, destination = summarize_trip(message["message"])
-        Backend.set_key("travel", id, "datetime", datetime)
-        Backend.set_key("travel", id, "destination", destination)
+        current_trip_id = Backend.get_key("user", id, "current_trip_id")
+        Backend.set_key("trip", current_trip_id, "datetime", datetime)
+        Backend.set_key("trip", current_trip_id, "destination", destination)
     end
 end
 

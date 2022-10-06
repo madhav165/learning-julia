@@ -3,6 +3,9 @@ module Telegram
 using HTTP
 using JSON
 
+using DotEnv
+DotEnv.config()
+
 url = "https://api.telegram.org/"
 key=ENV["TELEGRAM_KEY"]
 
