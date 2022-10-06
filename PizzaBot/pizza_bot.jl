@@ -2,9 +2,6 @@ using Printf
 using HTTP
 using JSON
 
-using DotEnv
-DotEnv.config()
-
 #include("white_backend.jl")
 include("psql_backend.jl")
 using Main.Backend
@@ -13,7 +10,7 @@ url = "https://api.telegram.org/"
 key=ENV["TELEGRAM_KEY"]
 
 function send_message(params)
-    req = HTTP.request("POST",string(url,"bot", key,"/sendMessage"),["Content-Type" => "application/json"],JSON.json(params))
+    req = HTTP.request("POST",string(url,"bot",key,"/sendMessage"),["Content-Type" => "application/json"],JSON.json(params))
 end
 
 function send_welcome(contact)
@@ -193,7 +190,7 @@ function run()
         else
             params = Dict()
         end
-        req = HTTP.request("GET", string(url,"bot", key,"/getUpdates"), ["Content-Type" => "application/json"],JSON.json(params))
+        req = HTTP.request("GET", string(url,"bot",key,"/getUpdates"), ["Content-Type" => "application/json"],JSON.json(params))
         body = String(req.body)
         result = JSON.Parser.parse(body)
 
