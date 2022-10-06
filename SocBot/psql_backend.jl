@@ -2,6 +2,7 @@ module Backend
 
 using LibPQ
 using Tables
+using Dates
 
 using DotEnv
 DotEnv.config()
@@ -28,11 +29,11 @@ end
 function update_trip_list(message)
     id = message["message"]["from"]["id"]
     update_id = message["update_id"]
-    id = parse(Int, string(id) * string(update_id))
-    @info "SELECT * from $trip_table WHERE id=$id;"
-    res = execute(conn, "SELECT * from $trip_table WHERE id=$id;")
+    id_contac = parse(Int, string(id) * string(update_id))
+    datetime = Dates.unix2datetime(message["message"]["date"])
+    res = execute(conn, "SELECT * from $trip_table WHERE id=$id_contac;")
     if length(columntable(res)[1]) == 0
-       res = execute(conn, "INSERT INTO $trip_table VALUES ($id,0);")
+       res = execute(conn, "INSERT INTO $trip_table VALUES ($id_contac, $id, '$datetime');")
     end
 end
 
@@ -83,13 +84,14 @@ function init_db()
             id integer PRIMARY KEY,
             state  integer,
             car varchar(100),
-            current_trip_id varchar(50)
+            current_trip_id bigint
         );
     """)
 
     result = execute(conn, """
         CREATE TABLE IF NOT EXISTS $trip_table (
             id bigint PRIMARY KEY,
+            user_id integer,
             datetime timestamp,
             origin varchar(200),
             destination varchar(200)
