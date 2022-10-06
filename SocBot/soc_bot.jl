@@ -12,6 +12,9 @@ using Main.Backend
 include("telegram.jl")
 using Main.Telegram
 
+include("googlemaps.jl")
+using Main.GMaps
+
 function send_welcome(contact)
     id = contact["id"]
     name = contact["first_name"]
@@ -27,8 +30,9 @@ end
 
 function ask_car(contact)
     id = contact["id"]
-    buttons = [Dict("text"=>"Nexon EV Prime"), Dict("text"=>"Nexon EV Max"), 
-    Dict("text"=>"Tigor EV"), Dict("text"=>"ZS EV")]
+    cars = Backend.get_key("car", 1, "car_name")
+    @info cars
+    buttons = [Dict("text"=>"Nexon EV Prime"), Dict("text"=>"Nexon EV Max")]
     reply_markup = Dict("keyboard"=>[buttons], "one_time_keyboard"=>true)
     params = Dict("chat_id"=>id, "text"=>"What car do you drive?", "reply_markup"=>reply_markup)
     Telegram.send_message(params)
@@ -39,7 +43,7 @@ function ask_origin(message, state)
     if state == 2
         car = message["text"]
 
-        if !(car  in ["Nexon EV Prime" "Nexon EV Max" "Tigor EV" "ZS EV"])
+        if !(car  in ["Nexon EV Prime" "Nexon EV Max"])
             car = "Nexon EV Prime"
         end
 
@@ -76,8 +80,23 @@ function summarize_trip(message)
     current_trip_id = Backend.get_key("user", id, "current_trip_id")
     origin = Backend.get_key("trip", current_trip_id, "origin")
     destination = Backend.get_key("trip", current_trip_id, "destination")
+
+    req = GMaps.get_distance(origin, destination)
+    body = String(req.body)
+    result = JSON.Parser.parse(body)
+    if result["status"] == "OK"
+        origin_address = result["origin_addresses"][1]
+        destination_address = result["destination_addresses"][1]
+        distance_text = result["rows"][1]["elements"][1]["distance"]["text"]
+        duration_text = result["rows"][1]["elements"][1]["duration"]["text"]
+        distance_m = result["rows"][1]["elements"][1]["distance"]["value"]
+        duration_min = result["rows"][1]["elements"][1]["duration"]["value"]
+    end
     
-    params = Dict("chat_id"=>id, "text"=>string("Wish you a happy journey from $origin to $destination in your $car !!!"))
+    params = Dict("chat_id"=>id, "text"=>string("Wish you a happy journey from $origin_address 
+to $destination_address in your $car.
+
+The distance of $distance_text can be covered in $duration_text."))
     Telegram.send_message(params)
 end
 

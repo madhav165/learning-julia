@@ -14,6 +14,7 @@ postgres_password=ENV["POSTGRES_PASSWORD"]
 postgres_db=ENV["POSTGRES_DB"]
 user_table=ENV["USER_TABLE"]
 trip_table=ENV["TRIP_TABLE"]
+car_table=ENV["CAR_TABLE"]
 key=ENV["TELEGRAM_KEY"]
 
 conn = -1
@@ -52,6 +53,12 @@ function get_key(table, id, key)
         data = Tables.columntable(res)
         keys = Dict("id"=>data[1][1], "user_id"=>data[2][1], "datetime"=>data[3][1], 
         "origin"=>data[4][1], "destination"=>data[5][1])
+        return keys[key]
+    elseif table == "car"
+        res = execute(conn, "SELECT * from $car_table;")
+        data = Tables.columntable(res)
+        keys = Dict("id"=>data[1][1], "car_name"=>data[2][1], "battery_capacity_wh"=>data[3][1], 
+        "usable_capacity_share"=>data[4][1])
         return keys[key]
     end 
 end
@@ -97,6 +104,24 @@ function init_db()
             origin varchar(200),
             destination varchar(200)
         );
+    """)
+
+    result = execute(conn, """
+    DROP TABLE IF EXISTS $car_table;    
+    CREATE TABLE IF NOT EXISTS $car_table (
+            id integer PRIMARY KEY,
+            car_name varchar(50),
+            battery_capacity_wh integer,
+            usable_capacity_share float
+        );
+        INSERT INTO $car_table VALUES (1, 'Nexon EV Prime', 30200, 0.95);
+        INSERT INTO $car_table VALUES (2, 'Nexon EV Max', 40500, 0.95);
+        INSERT INTO $car_table VALUES (3, 'Tigor EV', 26000, 0.95);
+        INSERT INTO $car_table VALUES (4, 'ZS EV 2021', 43000, 0.95);
+        INSERT INTO $car_table VALUES (5, 'ZS EV 2022', 50300, 0.95);
+        INSERT INTO $car_table VALUES (6, 'Kona EV', 40500, 0.95);
+        INSERT INTO $car_table VALUES (7, 'Tiago EV MR', 19000, 0.95);
+        INSERT INTO $car_table VALUES (8, 'Tiago EV LR', 24000, 0.95);
     """)
 
     close(conn)
