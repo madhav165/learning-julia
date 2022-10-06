@@ -4,6 +4,7 @@ RUN julia -e 'using Pkg; Pkg.add("HTTP")'
 RUN julia -e 'using Pkg; Pkg.add("JSON")'
 RUN julia -e 'using Pkg; Pkg.add("LibPQ")'
 RUN julia -e 'using Pkg; Pkg.add("Tables")'
+RUN julia -e 'using Pkg; Pkg.add("Dates")'
 
 
 COPY soc_bot.jl /home/

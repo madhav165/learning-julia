@@ -1,5 +1,6 @@
 using Printf
 using JSON
+using Dates
 
 #include("white_backend.jl")
 include("psql_backend.jl")
@@ -62,10 +63,11 @@ end
 function summarize_trip(message)
     id = message["from"]["id"]
     destination = message["text"]
+    datetime = Dates.unix2datetime(message["date"])
 
     params = Dict("chat_id"=>id, "text"=>string("You are headed to $destination"))
     Telegram.send_message(params)
-    return destination
+    return datetime, destination
 end
 
 function parse_message(message)
@@ -78,7 +80,7 @@ function parse_message(message)
         send_welcome(message["message"]["from"])
         Backend.set_state("user", id, 1)
     elseif message["message"]["text"]=="/plantrip"
-        if state == 1
+        if state <= 1
             car = Backend.get_car("user", id)
             if car === missing
                 @info "requesting car info"
@@ -110,7 +112,8 @@ function parse_message(message)
         Backend.set_key("travel", id, "origin", origin)
     elseif state == 5
         @info "sharing trip summary"
-        destination = summarize_trip(message["message"])
+        datetime, destination = summarize_trip(message["message"])
+        Backend.set_key("travel", id, "datetime", datetime)
         Backend.set_key("travel", id, "destination", destination)
     end
 end

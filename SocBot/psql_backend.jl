@@ -75,6 +75,7 @@ function init_db()
     result = execute(conn, """
         CREATE TABLE IF NOT EXISTS $travel_table (
             id integer PRIMARY KEY,
+            datetime timestamp,
             origin varchar(200),
             destination varchar(200)
         );
