@@ -23,7 +23,7 @@ function send_welcome(contact)
         Type /letscook to get started and then follow the instructions.
         Good job and good appetite !!"))
     else
-        params = Dict("chat_id"=>id, "text"=>string("Welcome ", name, " \nClick /letscook to begin.."))
+        params = Dict("chat_id"=>id, "text"=>string("Welcome ", name, "\nClick /letscook to begin.."))
     end
     Telegram.send_message(params)
 end
@@ -179,7 +179,6 @@ function run()
 
     @info "ready!"
     while true
-    #for i in 1:100
         if offset >= 0
             params = Dict("offset"=>offset)
         else
@@ -190,13 +189,14 @@ function run()
         result = JSON.Parser.parse(body)
 
         if length(result["result"]) < 1
+            sleep(0.2)
             continue
         end
         offset = result["result"][end]["update_id"] + 1
         for message in result["result"]
            parse_message(message)
         end
-        sleep(0.1)
+        sleep(0.2)
     end
 end
 
