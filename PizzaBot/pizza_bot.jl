@@ -1,17 +1,12 @@
 using Printf
-using HTTP
 using JSON
 
 #include("white_backend.jl")
 include("psql_backend.jl")
 using Main.Backend
 
-url = "https://api.telegram.org/"
-key=ENV["TELEGRAM_KEY"]
-
-function send_message(params)
-    req = HTTP.request("POST",string(url,"bot",key,"/sendMessage"),["Content-Type" => "application/json"],JSON.json(params))
-end
+include("telegram.jl")
+using Main.Telegram
 
 function send_welcome(contact)
     id = contact["id"]
@@ -30,7 +25,7 @@ function send_welcome(contact)
     else
         params = Dict("chat_id"=>id, "text"=>string("Welcome ", name, " \nClick /letscook to begin.."))
     end
-    send_message(params)
+    Telegram.send_message(params)
 end
 
 function ask_program(contact)
@@ -38,7 +33,7 @@ function ask_program(contact)
     buttons = [Dict("text"=>"pizza"), Dict("text"=>"focaccia")]
     reply_markup = Dict("keyboard"=>[buttons], "one_time_keyboard"=>true)
     params = Dict("chat_id"=>id, "text"=>"What do you want to cook? (pizza or focaccia)", "reply_markup"=>reply_markup)
-    send_message(params)
+    Telegram.send_message(params)
 end
 
 function ask_people(message)
@@ -50,9 +45,9 @@ function ask_people(message)
     end
 
     params = Dict("chat_id"=>id, "text"=>string("Well then I'll give you instructions to do the ", program))
-    send_message(params)
+    Telegram.send_message(params)
     params = Dict("chat_id"=>id, "text"=>string("For how many people do you want to do the ", program, "?"))
-    send_message(params)
+    Telegram.send_message(params)
     return program
 end
 
@@ -69,7 +64,7 @@ function read_people(message, state)
         return state + 1
     catch
         params = Dict("chat_id"=>id, "text"=>string("I have not understood. For how many people?"))
-        send_message(params)
+        Telegram.send_message(params)
         return state
     end
 end
@@ -93,7 +88,7 @@ function send_pizza(id, people)
     $(@sprintf("%.1f", recipe[3])) ml of water\n
     yeast to taste\n
     salt to taste\n"))
-    send_message(params)
+    Telegram.send_message(params)
 end
 
 function send_focaccia(id, people)
@@ -111,7 +106,7 @@ function send_focaccia(id, people)
     salt to taste\n\n
     You can use $(circular_str) in diameter: $(@sprintf("%.1f", circular))cm\n
     or $(rectangular_str) $(@sprintf("%.1f", rectangular[1])) cm X $(@sprintf("%.1f", rectangular[2])) cm"))
-    send_message(params)
+    Telegram.send_message(params)
 end
 
 function get_teglia(impasto)
@@ -149,7 +144,7 @@ function send_bye(contact)
     if lc=="en"
         params = Dict("chat_id"=>id, "text"=>string("Enjoy your meal ", name, "!"))
     end
-    send_message(params)
+    Telegram.send_message(params)
 end
 
 function parse_message(message)
@@ -182,7 +177,7 @@ end
 function run()
     offset = -1
 
-    println("ready!")
+    @info "ready!"
     while true
     #for i in 1:100
         if offset >= 0
@@ -190,7 +185,7 @@ function run()
         else
             params = Dict()
         end
-        req = HTTP.request("GET", string(url,"bot",key,"/getUpdates"), ["Content-Type" => "application/json"],JSON.json(params))
+        req = Telegram.get_updates(params)
         body = String(req.body)
         result = JSON.Parser.parse(body)
 

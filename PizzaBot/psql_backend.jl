@@ -3,7 +3,7 @@ module Backend
 using LibPQ
 using Tables
 
-export conn, init_db, get_conn, update_contact_list, get_key, set_key, get_state, set_state
+# export conn, init_db, get_conn, update_contact_list, get_key, set_key, get_state, set_state
 
 postgres_user=ENV["POSTGRES_USER"]
 postgres_password=ENV["POSTGRES_PASSWORD"]
