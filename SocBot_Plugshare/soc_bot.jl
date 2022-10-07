@@ -64,11 +64,14 @@ function ask_destination(message)
     return origin
 end
 
-function finalize_trip(message)
+function ask_distance(message)
     id = message["from"]["id"]
     destination = message["text"]
-    datetime = Dates.unix2datetime(message["date"])
-    return datetime, destination
+    params = Dict("chat_id"=>id, "text"=>string("Please share this information as on plugshare.com.
+    
+what is the distance (in km)?"))
+    Telegram.send_message(params)
+    return destination
 end
 
 function summarize_trip(message)
@@ -128,12 +131,11 @@ function parse_message(message)
         current_trip_id = Backend.get_key("user", id, "current_trip_id")
         Backend.set_key("trip", current_trip_id, "origin", origin)
     elseif state == 5
-        @info "sharing trip summary"
-        datetime, destination = finalize_trip(message["message"])
+        @info "asking for distance"
+        destination = ask_distance(message["message"])
         current_trip_id = Backend.get_key("user", id, "current_trip_id")
-        Backend.set_key("trip", current_trip_id, "datetime", datetime)
         Backend.set_key("trip", current_trip_id, "destination", destination)
-        summarize_trip(message["message"])
+        Backend.set_state("user", id, 6)
     end
 end
 
