@@ -11,6 +11,7 @@ token = ENV["ORS_TOKEN"]
 
 function get_coordinates(place_name::String)
     url = "https://api.openrouteservice.org/geocode/search"
+    place_name = replace(place_name, " " => "%20")
     req = HTTP.request("GET", string(url,"?api_key=", token, "&text=", place_name))
     body = String(req.body)
     result = JSON.Parser.parse(body)

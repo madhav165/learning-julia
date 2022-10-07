@@ -45,7 +45,18 @@ df3.wh_used = df3[!, "wh_per_km"] .* df3[!, "dist_per_wp_m"] ./ 1000
 df3[isnan.(df3.wh_used), :wh_used] .= 0
 df3[!, :total_wh_used] = cumsum(df3[!, :wh_used])
 
-CSV.write("df3.csv", df3)
+df_wh = df3
+car_usable_wh = 40500 * 0.95
+plot(df_wh[:,:distance_km], df_wh[:,:elevation], markersize = 1, 
+xlabel="Distance (km)", ylabel="Elevation (m)", title="Hyderabad to Bengaluru")
+plot!(df_wh[:,:distance_km], 100 .* (1 .- (df_wh[:,:total_wh_used] ./ car_usable_wh)), markersize = 1, size=(1497,539), label="SoC")
+plot!(df_wh[:,:distance_km], df_wh[:,:wh_per_km], markersize = 1, size=(1497,539), label="Wh per km")
+xlabel!("Distance (km)")
+title!("Hyderabad to Bengaluru")
+
+# plot(df_wh[:,:lat], df_wh[:,:lng], seriestype = :scatter, title = "My Scatter Plot")
+
+# CSV.write("df3.csv", df3)
 
 # savefig(plot(df3[:,:distance_km], df3[:,:elevation], markersize = 1, size=(1497,539), label="Elevation"), "elevation.png")
 # plot(df3[:,:distance_km], df3[:,:total_wh_used], markersize = 1, size=(1497,539), label="Wh used")
