@@ -62,7 +62,7 @@ function ask_destination(message)
     id = message["from"]["id"]
     origin = message["text"]
 
-    params = Dict("chat_id"=>id, "text"=>string("Where are you headed for?"))
+    params = Dict("chat_id"=>id, "text"=>string("Where are you headed?"))
     Telegram.send_message(params)
     return origin
 end
@@ -77,21 +77,36 @@ end
 function summarize_trip(message)
     id = message["from"]["id"]
     car = Backend.get_key("user", id, "car")
+    car_total_wh = Backend.get_key("car", car, "battery_capacity_wh")
+    car_usable_capacity_share = Backend.get_key("car", car, "usable_capacity_share")
+    car_usable_wh = car_total_wh * car_usable_capacity_share
     current_trip_id = Backend.get_key("user", id, "current_trip_id")
     origin = Backend.get_key("trip", current_trip_id, "origin")
     destination = Backend.get_key("trip", current_trip_id, "destination")
 
-    origin_coordinates = ORS.get_coordinates(origin)
-    destination_coordinates = ORS.get_coordinates(destination)
-    @info "origin_coordinates: $origin_coordinates"
-    @info "destination_coordinates: $destination_coordinates"
+    try
+        origin_coordinates = ORS.get_coordinates(origin)
+        destination_coordinates = ORS.get_coordinates(destination)
+        @info "origin_coordinates: $origin_coordinates"
+        @info "destination_coordinates: $destination_coordinates"
 
-    res = ORS.get_directions(origin_coordinates, destination_coordinates)
-    @info res
-    
-    params = Dict("chat_id"=>id, "text"=>string("Wish you a happy journey from $origin 
-to $destination in your $car."))
-    Telegram.send_message(params)
+        distance_text, duration_text, total_ascent, total_descent, df_wh = ORS.get_directions(origin_coordinates, destination_coordinates)
+        wh_used = sum(df_wh[!, "wh_used"])
+        soc_used = round((wh_used / car_usable_wh) * 100; digits=1)
+        
+        params = Dict("chat_id"=>id, "text"=>string("The distance of $distance_text from $origin to $destination can be covered in $duration_text.
+
+The route has a total elevation gain of $total_ascent m and elevation loss of $total_descent m.
+
+Estimated SoC required to complete the journey is $soc_used%."))
+        Telegram.send_message(params)
+    catch e
+        @error e
+        params = Dict("chat_id"=>id, "text"=>string("I could not estimate your travel SoC needs this time.
+        
+Please try again with a different name for origin or destination."))
+        Telegram.send_message(params)
+    end
 end
 
 function parse_message(message)

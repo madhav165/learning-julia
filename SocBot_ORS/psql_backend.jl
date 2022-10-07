@@ -55,7 +55,7 @@ function get_key(table, id, key)
         "origin"=>data[4][1], "destination"=>data[5][1])
         return keys[key]
     elseif table == "car"
-        res = execute(conn, "SELECT * from $car_table;")
+        res = execute(conn, "SELECT * from $car_table WHERE car_name='$id';")
         data = Tables.columntable(res)
         keys = Dict("id"=>data[1][1], "car_name"=>data[2][1], "battery_capacity_wh"=>data[3][1], 
         "usable_capacity_share"=>data[4][1])
