@@ -36,14 +36,16 @@ for (i, r) in enumerate(range_wp)
 end
 
 df3 = leftjoin(df, df2, on = :wp)
-df3.slope = df3[!,"elevation_diff_m"]./df3[!,"dist_per_wp_m"]
+df3[!, :distance_km] = round.(cumsum(df3[!, :dist_per_wp_m]) / 1000; digits=1)
+df3[!, :distance_m] = cumsum(df3[!, :dist_per_wp_m])
+df3[!, :elevation_diff_cum] = cumsum(df3[!, :elevation_diff_m])
+df3.slope = df3[!,"elevation_diff_cum"] ./ df3[!,"distance_m"]
 df3.wh_per_km = 119 .+ (df3[!,"slope"] .* 5)
 df3.wh_used = df3[!, "wh_per_km"] .* df3[!, "dist_per_wp_m"] ./ 1000
 df3[isnan.(df3.wh_used), :wh_used] .= 0
-sum(df3[!, "wh_used"])
-df3[!, :distance_km] = round.(cumsum(df3[!, :dist_per_wp_m]) / 1000; digits=1)
 df3[!, :total_wh_used] = cumsum(df3[!, :wh_used])
-# CSV.write("df3.csv", df3)
+
+CSV.write("df3.csv", df3)
 
 # savefig(plot(df3[:,:distance_km], df3[:,:elevation], markersize = 1, size=(1497,539), label="Elevation"), "elevation.png")
 # plot(df3[:,:distance_km], df3[:,:total_wh_used], markersize = 1, size=(1497,539), label="Wh used")
@@ -56,15 +58,15 @@ df3[!, :total_wh_used] = cumsum(df3[!, :wh_used])
 
 # Telegram.send_photo(params)
 
-include("telegram.jl")
-using Main.Telegram
-id = 1783646496
-try
-    open("./elevation.png") do io
-        params = Dict("chat_id"=>id, "photo"=>io)
-        print(params)
-        # Telegram.send_photo(params)
-    end
-catch e
-    @error e
-end
+# include("telegram.jl")
+# using Main.Telegram
+# id = 1783646496
+# try
+#     open("./elevation.png") do io
+#         params = Dict("chat_id"=>id, "photo"=>io)
+#         print(params)
+#         # Telegram.send_photo(params)
+#     end
+# catch e
+#     @error e
+# end
