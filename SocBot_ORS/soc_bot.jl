@@ -23,7 +23,7 @@ function send_welcome(contact)
     
 I can help estimate the charging needs for your trip so that you can be free of range anxiety.
    
-Type /plantrip to get started."))
+Click on /plantrip to get started."))
 
     Telegram.send_message(params)
 end
@@ -93,6 +93,7 @@ function summarize_trip(message)
         distance_text, duration_text, total_ascent, total_descent, df_wh = ORS.get_directions(origin_coordinates, destination_coordinates)
         wh_used = sum(df_wh[!, "wh_used"])
         soc_used = round((wh_used / car_usable_wh) * 100; digits=1)
+        savefig(plot(df_wh[:,:distance_km], df_wh[:,:elevation], markersize = 1, size=(1497,539), label="Elevation"), "elevation_$current_trip_id.png")
         
         params = Dict("chat_id"=>id, "text"=>string("The distance of $distance_text from $origin to $destination can be covered in $duration_text.
 
@@ -100,11 +101,20 @@ The route has a total elevation gain of $total_ascent m and elevation loss of $t
 
 Estimated SoC required to complete the journey is $soc_used%."))
         Telegram.send_message(params)
+
+        params = Dict("chat_id"=>id, "text"=>string("Elevation profile"))
+        Telegram.send_message(params)
+
+        open("elevation_$current_trip_id.png") do io
+            params = Dict("chat_id"=>id, "photo"=>io)
+            Telegram.send_photo(params)
+        end
+        rm("elevation_$current_trip_id.png")
     catch e
         @error e
         params = Dict("chat_id"=>id, "text"=>string("I could not estimate your travel SoC needs this time.
         
-Please try again with a different name for origin or destination."))
+Please try again with a different name for origin or destination by clicking on /plantrip."))
         Telegram.send_message(params)
     end
 end

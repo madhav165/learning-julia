@@ -2,6 +2,8 @@ using JSON
 using DataFrames
 using CSV
 using Plots
+using FileIO
+using ImageIO
 
 data = JSON.parsefile("response.geojson")
 
@@ -43,5 +45,26 @@ df3[!, :distance_km] = round.(cumsum(df3[!, :dist_per_wp_m]) / 1000; digits=1)
 df3[!, :total_wh_used] = cumsum(df3[!, :wh_used])
 # CSV.write("df3.csv", df3)
 
-plot(df3[:,:distance_km], df3[:,:elevation], markersize = 1, size=(1497,539), label="Elevation")
-plot(df3[:,:distance_km], df3[:,:total_wh_used], markersize = 1, size=(1497,539), label="Wh used")
+# savefig(plot(df3[:,:distance_km], df3[:,:elevation], markersize = 1, size=(1497,539), label="Elevation"), "elevation.png")
+# plot(df3[:,:distance_km], df3[:,:total_wh_used], markersize = 1, size=(1497,539), label="Wh used")
+
+# io = IOBuffer(read=true, write=true)
+# p = plot(df3[:,:distance_km], df3[:,:elevation], markersize = 1, size=(1497,539), label="Elevation")
+# write(io, sprint(show, "image/png", p))
+# params = Dict("chat_id"=>id, "photo"=>io)
+# params
+
+# Telegram.send_photo(params)
+
+include("telegram.jl")
+using Main.Telegram
+id = 1783646496
+try
+    open("./elevation.png") do io
+        params = Dict("chat_id"=>id, "photo"=>io)
+        print(params)
+        # Telegram.send_photo(params)
+    end
+catch e
+    @error e
+end

@@ -32,7 +32,7 @@ function get_directions(origin_coordinates::Vector{Float64}, destination_coordin
     distance_text = string(round(distance_m/1000; digits=1)) * " km"
     duration_s = result["features"][1]["properties"]["segments"][1]["duration"]
     duration_s = duration_s * 1.67
-    duration_text = string(round(div(duration_s, 3600); digits=0)) * " h " * string(round(div(mod(duration_s, 3600),60); digits=0)) * " min"
+    duration_text = string(trunc(Int, div(duration_s, 3600))) * " h " * string(trunc(Int, div(mod(duration_s, 3600),60))) * " min"
 
     coords = result["features"][1]["geometry"]["coordinates"]
     steps = result["features"][1]["properties"]["segments"][1]["steps"]
@@ -64,9 +64,11 @@ function get_directions(origin_coordinates::Vector{Float64}, destination_coordin
     
     df_wh = leftjoin(df, df2, on = :wp)
     df_wh.slope = df_wh[!,"elevation_diff_m"]./df_wh[!,"dist_per_wp_m"]
-    df_wh.wh_per_km = 119 .+ (df_wh[!,"slope"] .* 5)
+    df_wh.wh_per_km = 119 .+ (df_wh[!,"slope"] .* 10)
     df_wh.wh_used = df_wh[!, "wh_per_km"] .* df_wh[!, "dist_per_wp_m"] ./ 1000
     df_wh[isnan.(df_wh.wh_used), :wh_used] .= 0
+    df_wh[!, :distance_km] = round.(cumsum(df_wh[!, :dist_per_wp_m]) / 1000; digits=1)
+    df_wh[!, :total_wh_used] = cumsum(df_wh[!, :wh_used])
 
     return distance_text, duration_text, total_ascent, total_descent, df_wh
 end
