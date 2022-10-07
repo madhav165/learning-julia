@@ -52,9 +52,7 @@ function get_key(table, id, key)
         res = execute(conn, "SELECT * from $trip_table WHERE id=$id;")
         data = Tables.columntable(res)
         keys = Dict("id"=>data[1][1], "user_id"=>data[2][1], "datetime"=>data[3][1], 
-        "origin"=>data[4][1], "destination"=>data[5][1], "onward_distance"=>data[6][1], 
-        "origin_elevation"=>data[7][1], "destination_elevation"=>data[8][1], 
-        "return_distance"=>data[9][1])
+        "origin"=>data[4][1], "destination"=>data[5][1])
         return keys[key]
     elseif table == "car"
         res = execute(conn, "SELECT * from $car_table;")
@@ -104,11 +102,7 @@ function init_db()
             user_id integer,
             datetime timestamp,
             origin varchar(200),
-            destination varchar(200),
-            onward_distance_km float,
-            origin_elevation_m float,
-            destination_elevation_m float,
-            return_distance_km float
+            destination varchar(200)
         );
     """)
 

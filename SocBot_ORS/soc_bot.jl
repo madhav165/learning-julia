@@ -12,6 +12,9 @@ using Main.Backend
 include("telegram.jl")
 using Main.Telegram
 
+include("ors.jl")
+using Main.ORS
+
 function send_welcome(contact)
     id = contact["id"]
     name = contact["first_name"]
@@ -64,38 +67,11 @@ function ask_destination(message)
     return origin
 end
 
-function ask_onward_distance(message)
+function finalize_trip(message)
     id = message["from"]["id"]
     destination = message["text"]
-
-    params = Dict("chat_id"=>id, "text"=>string("I need some information from plugshare.com to estimate range
-based on distance and elevation profile of the route."))
-    Telegram.send_message(params)
-
-    params = Dict("chat_id"=>id, "text"=>string("What is the distance of onward journey (in km)?"))
-    Telegram.send_message(params)
-
-    return destination
-end
-
-function ask_origin_elevation(message)
-    id = message["from"]["id"]
-    distance = message["text"]
-
-    params = Dict("chat_id"=>id, "text"=>string("What is the elevation (above MSL) of origin (in m)?"))
-    Telegram.send_message(params)
-
-    return distance
-end
-
-function ask_destination_elevation(message)
-    id = message["from"]["id"]
-    origin_elevation = message["text"]
-
-    params = Dict("chat_id"=>id, "text"=>string("What is the elevation (above MSL) of destination (in m)?"))
-    Telegram.send_message(params)
-
-    return origin_elevation
+    datetime = Dates.unix2datetime(message["date"])
+    return datetime, destination
 end
 
 function summarize_trip(message)
@@ -104,6 +80,14 @@ function summarize_trip(message)
     current_trip_id = Backend.get_key("user", id, "current_trip_id")
     origin = Backend.get_key("trip", current_trip_id, "origin")
     destination = Backend.get_key("trip", current_trip_id, "destination")
+
+    origin_coordinates = ORS.get_coordinates(origin)
+    destination_coordinates = ORS.get_coordinates(destination)
+    @info "origin_coordinates: $origin_coordinates"
+    @info "destination_coordinates: $destination_coordinates"
+
+    res = ORS.get_directions(origin_coordinates, destination_coordinates)
+    @info res
     
     params = Dict("chat_id"=>id, "text"=>string("Wish you a happy journey from $origin 
 to $destination in your $car."))
@@ -140,44 +124,27 @@ function parse_message(message)
             Backend.set_state("user", id, 4)
         end
     elseif state == 2
-        @info "user $id: saving car info and asking for origin"
+        @info "saving car info and asking for origin"
         car = ask_origin(message["message"], state)
         Backend.set_state("user", id, 4)
         Backend.set_key("user", id,"car",car)
     elseif state == 3
-        @info "user $id: asking for origin"
+        @info "asking for origin"
         ask_origin(message["message"], state)
         Backend.set_state("user", id, 4)
     elseif state == 4
-        @info "user $id: asking for destination"
+        @info "asking for destination"
         origin = ask_destination(message["message"])
         Backend.set_state("user", id, 5)
         current_trip_id = Backend.get_key("user", id, "current_trip_id")
         Backend.set_key("trip", current_trip_id, "origin", origin)
     elseif state == 5
-        @info "user $id: asking for onward distance"
-        destination = ask_onward_distance(message["message"])
+        @info "sharing trip summary"
+        datetime, destination = finalize_trip(message["message"])
         current_trip_id = Backend.get_key("user", id, "current_trip_id")
+        Backend.set_key("trip", current_trip_id, "datetime", datetime)
         Backend.set_key("trip", current_trip_id, "destination", destination)
-        Backend.set_state("user", id, 6)
-    elseif state == 6
-        @info "user $id: asking for elevation of origin"
-        onward_distance = ask_origin_elevation(message["message"])
-        current_trip_id = Backend.get_key("user", id, "current_trip_id")
-        Backend.set_key("trip", current_trip_id, "onward_distance_km", onward_distance)
-        Backend.set_state("user", id, 7)
-    elseif state == 7
-        @info "user $id: asking for elevation of destination"
-        origin_elevation = ask_destination_elevation(message["message"])
-        current_trip_id = Backend.get_key("user", id, "current_trip_id")
-        Backend.set_key("trip", current_trip_id, "origin_elevation_m", origin_elevation)
-        Backend.set_state("user", id, 8)
-    elseif state == 8
-        @info "user $id: asking for elevation of origin"
-        origin_elevation = ask_destination_elevation(message["message"])
-        current_trip_id = Backend.get_key("user", id, "current_trip_id")
-        Backend.set_key("trip", current_trip_id, "origin_elevation_m", origin_elevation)
-        Backend.set_state("user", id, 8)
+        summarize_trip(message["message"])
     end
 end
 
