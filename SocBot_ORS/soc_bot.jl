@@ -84,9 +84,37 @@ function summarize_trip(message)
     origin = Backend.get_key("trip", current_trip_id, "origin")
     destination = Backend.get_key("trip", current_trip_id, "destination")
 
+    origin_latitude = Backend.get_key("place", origin, "latitude")
+    if origin_latitude === missing
+        try
+            @info "Querying API for origin coordinates"
+            origin_coordinates = ORS.get_coordinates(origin)
+            Backend.update_place_list(origin, origin_coordinates[1], origin_coordinates[2])
+        catch e
+            @error e
+        end
+    else
+        origin_longitude = Backend.get_key("place", origin, "longitude")
+        origin_coordinates = [origin_latitude, origin_longitude]
+    end
+
+    destination_latitude = Backend.get_key("place", destination, "latitude")
+    if destination_latitude === missing
+        try
+            @info "Querying API for destination coordinates"
+            destination_coordinates = ORS.get_coordinates(destination)
+            Backend.update_place_list(destination, destination_coordinates[1], destination_coordinates[2])
+        catch e
+            @error e
+        end
+    else
+        destination_longitude = Backend.get_key("place", destination, "longitude")
+        destination_coordinates = [destination_latitude, destination_longitude]
+    end
+
     try
-        origin_coordinates = ORS.get_coordinates(origin)
-        destination_coordinates = ORS.get_coordinates(destination)
+        # origin_coordinates = ORS.get_coordinates(origin)
+        # destination_coordinates = ORS.get_coordinates(destination)
         @info "origin_coordinates: $origin_coordinates"
         @info "destination_coordinates: $destination_coordinates"
 

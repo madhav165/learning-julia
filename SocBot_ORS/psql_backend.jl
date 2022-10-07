@@ -15,6 +15,7 @@ postgres_db=ENV["POSTGRES_DB"]
 user_table=ENV["USER_TABLE"]
 trip_table=ENV["TRIP_TABLE"]
 car_table=ENV["CAR_TABLE"]
+place_table=ENV["PLACE_TABLE"]
 key=ENV["TELEGRAM_KEY"]
 
 conn = -1
@@ -38,8 +39,15 @@ function update_trip_list(message)
     end
 end
 
-function send_message(params)
-    req = HTTP.request("POST",string(url,"bot",key,"/sendMessage"),["Content-Type" => "application/json"],JSON.json(params))
+function update_place_list(place_name, longitude, latitude)
+    try
+        res = execute(conn, "SELECT * from $place_table WHERE id='$place_name';")
+        if length(columntable(res)[1]) == 0
+            res = execute(conn, "INSERT INTO $place_table VALUES ('$place_name', $longitude, $latitude);")
+        end
+    catch e
+        @error e
+    end
 end
 
 function get_key(table, id, key)
@@ -60,6 +68,11 @@ function get_key(table, id, key)
         keys = Dict("id"=>data[1][1], "car_name"=>data[2][1], "battery_capacity_wh"=>data[3][1], 
         "usable_capacity_share"=>data[4][1])
         return keys[key]
+    elseif table == "place"
+        res = execute(conn, "SELECT * from $place_table WHERE id='$id';")
+        data = Tables.columntable(res)
+        keys = Dict("id"=>data[1][1], "latitude"=>data[2][1], "longitude"=>data[3][1])
+        return keys[key]
     end 
 end
 
@@ -68,6 +81,18 @@ function set_key(table, id, key, value)
         res = execute(conn, "UPDATE $user_table SET $(key)='$value' WHERE id=$id;")
     elseif table == "trip"
         res = execute(conn, "UPDATE $trip_table SET $(key)='$value' WHERE id=$id;")
+    end
+end
+
+function get_rows(table)
+    if table == "user"
+        res = execute(conn, "SELECT COUNT(1) FROM $user_table;")
+    elseif table == "trip"
+        res = execute(conn, "SELECT COUNT(1) FROM $trip_table;")
+    elseif table == "car"
+        res = execute(conn, "SELECT COUNT(1) FROM $car_table;")
+    elseif table == "place"
+        res = execute(conn, "SELECT COUNT(1) FROM $place_table;")
     end
 end
 
@@ -103,6 +128,14 @@ function init_db()
             datetime timestamp,
             origin varchar(200),
             destination varchar(200)
+        );
+    """)
+
+    result = execute(conn, """
+        CREATE TABLE IF NOT EXISTS $place_table (
+            id varchar(200) PRIMARY KEY,
+            longitude float,
+            latitude float
         );
     """)
 
