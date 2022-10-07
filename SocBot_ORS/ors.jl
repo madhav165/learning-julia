@@ -67,7 +67,7 @@ function get_directions(origin_coordinates::Vector{Float64}, destination_coordin
     df_wh[!, :distance_km] = round.(df_wh[!, :distance_m]; digits=1)
     df_wh[!, :elevation_diff_cum] = cumsum(df_wh[!, :elevation_diff_m])
     df_wh.slope = df_wh[!,"elevation_diff_cum"] ./ df_wh[!,"distance_m"]
-    df_wh.wh_per_km = 155 .+ (df_wh[!,"slope"] .* 5000)
+    df_wh.wh_per_km = 130 .+ (df_wh[!,"slope"] .* 5000)
     df_wh.wh_used = df_wh[!, "wh_per_km"] .* df_wh[!, "dist_per_wp_m"] ./ 1000
     df_wh[isnan.(df_wh.wh_used), :wh_used] .= 0
     df_wh[!, :total_wh_used] = cumsum(df_wh[!, :wh_used])
