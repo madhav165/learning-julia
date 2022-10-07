@@ -94,6 +94,7 @@ function summarize_trip(message)
         wh_used = sum(df_wh[!, "wh_used"])
         soc_used = round((wh_used / car_usable_wh) * 100; digits=1)
         savefig(plot(df_wh[:,:distance_km], df_wh[:,:elevation], markersize = 1, size=(1497,539), label="Elevation"), "elevation_$current_trip_id.png")
+        savefig(plot(df_wh[:,:distance_km], 100 .* (1 .- (df_wh[:,:total_wh_used] ./ car_usable_wh)), markersize = 1, size=(1497,539), label="SoC"), "soc_$current_trip_id.png")
         
         params = Dict("chat_id"=>id, "text"=>string("The distance of $distance_text from $origin to $destination can be covered in $duration_text.
 
@@ -110,6 +111,15 @@ Estimated SoC required to complete the journey is $soc_used%."))
             Telegram.send_photo(params)
         end
         rm("elevation_$current_trip_id.png")
+
+        params = Dict("chat_id"=>id, "text"=>string("Elevation profile"))
+        Telegram.send_message(params)
+
+        open("soc_$current_trip_id.png") do io
+            params = Dict("chat_id"=>id, "photo"=>io)
+            Telegram.send_photo(params)
+        end
+        rm("soc_$current_trip_id.png")
     catch e
         @error e
         params = Dict("chat_id"=>id, "text"=>string("I could not estimate your travel SoC needs this time.
