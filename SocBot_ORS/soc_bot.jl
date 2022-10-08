@@ -133,11 +133,11 @@ function summarize_trip(message)
         wh_used = sum(df_wh[!, "wh_used"])
         soc_used = round((wh_used / car_usable_wh) * 100; digits=1)
         savefig(plot(df_wh[:,:distance_km], df_wh[:,:elevation], markersize = 1, 
-        xlabel="Distance (km)", ylabel="Elevation (m)", label="", title="$origin to $destination"), "elevation_$current_trip_id.png")
+        xlabel="Distance (km)", ylabel="Elevation (m)", label="", title="$origin to $destination\n(Elevation)"), "elevation_$current_trip_id.png")
         savefig(plot(df_wh[:,:distance_km], 100 .* (1 .- (df_wh[:,:total_wh_used] ./ car_usable_wh)), markersize = 1, 
-        xlabel="Distance (km)", ylabel="SoC (%)", label="", title="$origin to $destination"), "soc_$current_trip_id.png")
+        xlabel="Distance (km)", ylabel="SoC (%)", label="", title="$origin to $destination\n(SoC%)"), "soc_$current_trip_id.png")
         savefig(plot(df_wh[:,:distance_km], df_wh[:,:wh_per_km], markersize = 1, 
-        xlabel="Distance (km)", ylabel="Wh per km", label="", title="$origin to $destination"), "wh_per_km_$current_trip_id.png")
+        xlabel="Distance (km)", ylabel="Wh per km", label="", title="$origin to $destination\n(Wh/km)"), "wh_per_km_$current_trip_id.png")
 
         params = Dict("chat_id"=>id, "text"=>string("The distance of $distance_text from $origin to $destination can be covered in $duration_text.
 
@@ -146,8 +146,8 @@ The route has a total elevation gain of $total_ascent m and elevation loss of $t
 Estimated SoC required to complete the journey is $soc_used%."))
         Telegram.send_message(params)
 
-        params = Dict("chat_id"=>id, "text"=>string("Elevation profile"))
-        Telegram.send_message(params)
+        # params = Dict("chat_id"=>id, "text"=>string("Elevation profile"))
+        # Telegram.send_message(params)
 
         open("elevation_$current_trip_id.png") do io
             params = Dict("chat_id"=>id, "photo"=>io)
@@ -155,8 +155,8 @@ Estimated SoC required to complete the journey is $soc_used%."))
         end
         rm("elevation_$current_trip_id.png")
 
-        params = Dict("chat_id"=>id, "text"=>string("SoC profile"))
-        Telegram.send_message(params)
+        # params = Dict("chat_id"=>id, "text"=>string("SoC profile"))
+        # Telegram.send_message(params)
 
         open("soc_$current_trip_id.png") do io
             params = Dict("chat_id"=>id, "photo"=>io)
@@ -164,8 +164,8 @@ Estimated SoC required to complete the journey is $soc_used%."))
         end
         rm("soc_$current_trip_id.png")
 
-        params = Dict("chat_id"=>id, "text"=>string("Wh per km profile"))
-        Telegram.send_message(params)
+        # params = Dict("chat_id"=>id, "text"=>string("Wh per km profile"))
+        # Telegram.send_message(params)
 
         open("wh_per_km_$current_trip_id.png") do io
             params = Dict("chat_id"=>id, "photo"=>io)
