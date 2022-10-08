@@ -1,7 +1,7 @@
 module ORS
 
-using DotEnv
-DotEnv.config()
+# using DotEnv
+# DotEnv.config()
 
 using HTTP
 using JSON

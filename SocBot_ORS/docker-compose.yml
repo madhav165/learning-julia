@@ -13,6 +13,7 @@ services:
     - USER_TABLE=${USER_TABLE}
     - TRIP_TABLE=${TRIP_TABLE}
     - CAR_TABLE=${CAR_TABLE}
+    - PLACE_TABLE=${PLACE_TABLE}
     depends_on:
       - db
     links:
@@ -33,6 +34,7 @@ services:
     - USER_TABLE=${USER_TABLE}
     - TRIP_TABLE=${TRIP_TABLE}
     - CAR_TABLE=${CAR_TABLE}
+    - PLACE_TABLE=${PLACE_TABLE}
     restart: on-failure
     networks:
     - soc_net
