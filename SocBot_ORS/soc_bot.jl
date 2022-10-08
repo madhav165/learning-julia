@@ -1,6 +1,7 @@
 using Printf
 using JSON
 using Dates
+using Plots
 
 using DotEnv
 DotEnv.config()
@@ -26,6 +27,13 @@ I can help estimate the charging needs for your trip so that you can be free of 
 Click on /plantrip to get started."))
 
     Telegram.send_message(params)
+end
+
+function clean_str(str::String)
+    str = strip(str)
+    str = replace(str, "," => " ", r"\s+" => " ")
+    str = uppercasefirst(str)
+    return str
 end
 
 function ask_car(contact)
@@ -61,6 +69,7 @@ end
 function ask_destination(message)
     id = message["from"]["id"]
     origin = message["text"]
+    origin = clean_str(origin)
 
     params = Dict("chat_id"=>id, "text"=>string("Where are you headed?"))
     Telegram.send_message(params)
@@ -70,6 +79,8 @@ end
 function finalize_trip(message)
     id = message["from"]["id"]
     destination = message["text"]
+    destination = clean_str(destination)
+
     datetime = Dates.unix2datetime(message["date"])
     return datetime, destination
 end
