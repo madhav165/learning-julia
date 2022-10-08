@@ -32,7 +32,7 @@ end
 function clean_str(str::String)
     str = strip(str)
     str = replace(str, "," => " ", r"\s+" => " ")
-    str = uppercasefirst(str)
+    str = join(map((x) -> uppercasefirst(x), split(str, " ")), " ")
     return str
 end
 
@@ -134,7 +134,7 @@ function summarize_trip(message)
         soc_used = round((wh_used / car_usable_wh) * 100; digits=1)
         savefig(plot(df_wh[:,:distance_km], df_wh[:,:elevation], markersize = 1, 
         xlabel="Distance (km)", ylabel="Elevation (m)", label="", title="$origin to $destination\n(Elevation)"), "elevation_$current_trip_id.png")
-        savefig(plot(df_wh[:,:distance_km], 100 .* (1 .- (df_wh[:,:total_wh_used] ./ car_usable_wh)), markersize = 1, 
+        savefig(plot(df_wh[:,:distance_km], 100 .* (df_wh[:,:total_wh_used] ./ car_usable_wh), markersize = 1, 
         xlabel="Distance (km)", ylabel="SoC (%)", label="", title="$origin to $destination\n(SoC%)"), "soc_$current_trip_id.png")
         savefig(plot(df_wh[:,:distance_km], df_wh[:,:wh_per_km], markersize = 1, 
         xlabel="Distance (km)", ylabel="Wh per km", label="", title="$origin to $destination\n(Wh/km)"), "wh_per_km_$current_trip_id.png")
