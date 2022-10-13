@@ -1,4 +1,4 @@
-lat,lng,elevation,wp,elevation_diff_m,dist_per_wp_m,distance_km,distance_m,elevation_diff_cum,slope,wh_per_km,wh_used,total_wh_used
+lng,lat,elevation,wp,elevation_diff_m,dist_per_wp_m,distance_km,distance_m,elevation_diff_cum,slope,wh_per_km,wh_used,total_wh_used
 78.50598,17.397965,498.3,1,0,0,0,0,0,NaN,NaN,0,0
 78.50535,17.39829,498.6,2,0.3,76,0.1,76,0.3,0.003947368,119.0197368,9.0455,9.0455
 78.505223,17.398169,498.7,3,0.1,41.3,0.1,117.3,0.4,0.00341006,119.0170503,4.915404177,13.96090418
