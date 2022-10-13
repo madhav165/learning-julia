@@ -16,6 +16,7 @@ user_table=ENV["USER_TABLE"]
 trip_table=ENV["TRIP_TABLE"]
 car_table=ENV["CAR_TABLE"]
 place_table=ENV["PLACE_TABLE"]
+charger_table=ENV["CHARGER_TABLE"]
 key=ENV["TELEGRAM_KEY"]
 
 conn = -1
@@ -155,6 +156,29 @@ function init_db()
         INSERT INTO $car_table VALUES (6, 'Kona EV', 40500, 0.95);
         INSERT INTO $car_table VALUES (7, 'Tiago EV MR', 19000, 0.95);
         INSERT INTO $car_table VALUES (8, 'Tiago EV LR', 24000, 0.95);
+    """)
+
+    result = execute(conn, """
+    DROP TABLE IF EXISTS $charger_table;    
+    CREATE TABLE IF NOT EXISTS $charger_table (
+            chager_name varchar(200) PRIMARY KEY,
+            charger_company varchar(200),
+            power_kw int,
+            latitude float,
+            longitude float,
+        );
+        INSERT INTO $charger_table VALUES ('Brigade Orchirds - Devanahalli', 'Kurrent', 25, 13.23724626446745, 77.72430818875233);
+        INSERT INTO $charger_table VALUES ('Hotel Gangothri - Kodikonda', 'LionCharge', 24, 13.834520360801957, 77.74170515906907);
+        INSERT INTO $charger_table VALUES ('Exotikka Restaurant - Anantapur', 'LionCharge', 24, 14.65469801672688, 77.58183791508813);
+        INSERT INTO $charger_table VALUES ('Hotel Bluemoon Highway - Anantapur', 'Tata Power', 24, 15.027635174374792, 77.62079347109878);
+        INSERT INTO $charger_table VALUES ('Matsya Amazon Kitchens - Kurnool', 'Tata Power', 25, 15.577069934453466, 77.9371242460447);
+        INSERT INTO $charger_table VALUES ('Hotel Sasya Pride - Kurnool', 'Tata Power', 30, 15.82489624500939, 78.04032394343133);
+        INSERT INTO $charger_table VALUES ('Sri Sai Dhaba - Kothakota', 'Tata Power', 24, 16.417256112587747, 77.94041992427229);
+        INSERT INTO $charger_table VALUES ('HPCL - Addakal', 'Fortum', 60, 16.533050370221027, 77.93946932013287);
+        INSERT INTO $charger_table VALUES ('Hotel Raibow Continental - Rajapur', 'Zeon', 24, 16.870278867053663, 78.16403875802179);
+        INSERT INTO $charger_table VALUES ('Manjira Hotels & Resorts - Jadcherla', 'ChargeGrid', 50, 16.798052209484826, 78.14233020499024);
+        INSERT INTO $charger_table VALUES ('Croma - Attapur', 'Tata Power', 30, 17.366850824282807, 78.42847612437755);
+
     """)
 
     close(conn)
