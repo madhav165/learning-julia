@@ -187,10 +187,10 @@ function init_db()
             elevation float
         );
         INSERT INTO $charger_table VALUES ('Brigade Orchirds - Devanahalli', 'Kurrent', 25, 13.23724626446745, 77.72430818875233, 906);
-        INSERT INTO $charger_table VALUES ('Hotel Gangothri - Kodikonda', 'LionCharge', 24, 13.834520360801957, 77.74170515906907, 715);
+        --INSERT INTO $charger_table VALUES ('Hotel Gangothri - Kodikonda', 'LionCharge', 24, 13.834520360801957, 77.74170515906907, 715);
         INSERT INTO $charger_table VALUES ('Exotikka Restaurant - Anantapur', 'LionCharge', 24, 14.65469801672688, 77.58183791508813, 356);
         INSERT INTO $charger_table VALUES ('Hotel Bluemoon Highway - Anantapur', 'Tata Power', 24, 15.027635174374792, 77.62079347109878, 323);
-        INSERT INTO $charger_table VALUES ('Matsya Amazon Kitchens - Kurnool', 'Tata Power', 25, 15.577069934453466, 77.9371242460447, 333);
+        --INSERT INTO $charger_table VALUES ('Matsya Amazon Kitchens - Kurnool', 'Tata Power', 25, 15.577069934453466, 77.9371242460447, 333);
         INSERT INTO $charger_table VALUES ('Hotel Sasya Pride - Kurnool', 'Tata Power', 30, 15.82489624500939, 78.04032394343133, 283);
         INSERT INTO $charger_table VALUES ('Sri Sai Dhaba - Kothakota', 'Tata Power', 24, 16.417256112587747, 77.94041992427229, 351);
         INSERT INTO $charger_table VALUES ('HPCL - Addakal', 'Fortum', 60, 16.533050370221027, 77.93946932013287, 382);

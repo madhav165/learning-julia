@@ -3,8 +3,8 @@ using JSON
 using Dates
 using Plots
 using Geodesy
-# using CSV
 using DataFrames
+# using CSV
 
 # using DotEnv
 # DotEnv.config()
@@ -42,7 +42,6 @@ end
 function ask_car(contact)
     id = contact["id"]
     cars = Backend.get_key("car", 1, "car_name")
-    @info cars
     buttons = [Dict("text"=>"Nexon EV Prime"), Dict("text"=>"Nexon EV Max")]
     reply_markup = Dict("keyboard"=>[buttons], "one_time_keyboard"=>true)
     params = Dict("chat_id"=>id, "text"=>"What car do you drive?", "reply_markup"=>reply_markup)
@@ -173,23 +172,58 @@ The route has a total elevation gain of $total_ascent m and elevation loss of $t
         distance_between_lla = (x, y) -> Geodesy.euclidean_distance(x, y)
 
         charger_arr = []
+        push!(charger_arr, [origin, 0.0, 0.0])
         for (i, c) in enumerate(charger_point_lla)
             dist = df_wh[argmin([distance_between_lla(r[1], c) for r in eachrow(way_point_lla)]), :distance_km]
             charge_used = df_wh[argmin([distance_between_lla(r[1], c) for r in eachrow(way_point_lla)]), :total_wh_used]
             charge_used = round((charge_used / car_usable_wh) * 100; digits=1)
             # @info charger_names[i], dist, charge_used
-            push!(charger_arr, [i, charger_names[i], dist, charge_used])
+            # push!(charger_arr, [charger_names[i], dist, charge_used])
+            if minimum([distance_between_lla(r[1], c) for r in eachrow(way_point_lla)]) < 30000
+                push!(charger_arr, [charger_names[i], dist, charge_used])
+            end
         end
 
-        charger_string = x -> "$(x[1]). $(x[2]) at $(x[3]) km, needs $(x[4])% SoC\n"
-        charger_string_total = join(charger_string.(charger_arr), "\n")
+        charger_arr = mapreduce(permutedims, vcat, charger_arr)
+        charger_arr = charger_arr[sortperm(charger_arr[:, 2]), :]
+
+        charger_string = x -> "$(x[1]) at $(x[2]) km, needs $(x[3])% SoC\n"
+        charger_string_total = join(charger_string.(eachrow(charger_arr)), "\n")
 
         params = Dict("chat_id"=>id, "text"=>string("The different chargers along the route are\n\n$charger_string_total"))
 
         Telegram.send_message(params)
 
-        params = Dict("chat_id"=>id, "text"=>string("Estimated SoC required to complete the journey is $soc_used%."))
+        target_destination_soc = 0.3
+        target_charger_soc = 0.2
 
+        if (soc_used < target_destination_soc)
+            charging_msg = "Start at $origin with 100% SoC.\nReach $destination with $(trunc(Int, 100 - soc_used))% SoC remaining."
+        else
+            charging_msg_arr = ["$distance_text: Reach $destination with $(trunc(Int, target_destination_soc*100))% SoC remaining"]
+
+            starting_soc = (soc_used .- charger_arr[:,3]) .+ (target_destination_soc * 100)
+
+            while starting_soc[1] > 100
+                charger_index = findfirst(x -> x==maximum(starting_soc[starting_soc.<90]), starting_soc)
+                charger = charger_arr[charger_index, :]
+                charging_msg = "$(charger[2]) km: Reach $(charger[1]) with $(trunc(Int, target_charger_soc * 100))% SoC and charge to $(trunc(Int, starting_soc[charger_index]))% SoC."
+                push!(charging_msg_arr, charging_msg)
+                starting_soc = (charger_arr[charger_index, 3] .- charger_arr[:,3]) .+ (target_charger_soc * 100)
+            end
+
+            charging_msg = "$(charger_arr[1,2]) km: Start at $origin with $(trunc(Int, starting_soc[1] + charger_arr[1,3]))% SoC."
+            push!(charging_msg_arr, charging_msg)
+
+            reverse!(charging_msg_arr)
+
+            charging_msg = join(charging_msg_arr, "\n\n")
+        end
+
+        params = Dict("chat_id"=>id, "text"=>string(charging_msg))
+        Telegram.send_message(params)
+
+        params = Dict("chat_id"=>id, "text"=>string("Total estimated SoC for the drive is $(trunc(Int, soc_used))%."))
         Telegram.send_message(params)
 
         # params = Dict("chat_id"=>id, "text"=>string("Elevation profile"))

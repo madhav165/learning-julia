@@ -10,6 +10,7 @@ d = Geodesy.LLA(12.9929, 77.692, 896.7)
 Geodesy.euclidean_distance(o, d)
 
 
+
 tbl = Tables.rowtable(df)
 
 f = x -> Geodesy.LLA(x[2], x[1], x[3])
