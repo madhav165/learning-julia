@@ -7,7 +7,7 @@ RUN julia -e 'using Pkg; Pkg.add("Tables")'
 RUN julia -e 'using Pkg; Pkg.add("Dates")'
 RUN julia -e 'using Pkg; Pkg.add("DataFrames")'
 RUN julia -e 'using Pkg; Pkg.add("Plots")'
-
+RUN julia -e 'using Pkg; Pkg.add("Geodesy")'
 
 COPY soc_bot.jl /home/
 COPY psql_backend.jl /home/

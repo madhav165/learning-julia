@@ -2,6 +2,9 @@ using Printf
 using JSON
 using Dates
 using Plots
+using Geodesy
+# using CSV
+using DataFrames
 
 # using DotEnv
 # DotEnv.config()
@@ -130,6 +133,13 @@ function summarize_trip(message)
         @info "destination_coordinates: $destination_coordinates"
 
         distance_text, duration_text, total_ascent, total_descent, df_wh = ORS.get_directions(origin_coordinates, destination_coordinates)
+        # CSV.write("df_wh.csv", df_wh)
+        # distance_text = "573.2 km"
+        # duration_text = "11 h 51 min"
+        # total_ascent = 2143.2
+        # total_descent = 2548.8
+        # df_wh = DataFrame(CSV.File("df_wh.csv"))
+
         wh_used = sum(df_wh[!, "wh_used"])
         soc_used = round((wh_used / car_usable_wh) * 100; digits=1)
         savefig(plot(df_wh[:,:distance_km], df_wh[:,:elevation], markersize = 1, 
@@ -141,9 +151,45 @@ function summarize_trip(message)
 
         params = Dict("chat_id"=>id, "text"=>string("The distance of $distance_text from $origin to $destination can be covered in $duration_text.
 
-The route has a total elevation gain of $total_ascent m and elevation loss of $total_descent m.
+The route has a total elevation gain of $total_ascent m and elevation loss of $total_descent m."))
 
-Estimated SoC required to complete the journey is $soc_used%."))
+        Telegram.send_message(params)
+
+        charger_data = Backend.get_all_rows("charger")
+        charger_names = charger_data[1]
+        charger_companies = charger_data[2]
+        charger_powers = charger_data[3]
+        charger_lat = charger_data[4]
+        charger_lon = charger_data[5]
+        charger_ele = charger_data[6]
+
+        way_points = hcat(df_wh[:,:lat], df_wh[:,:lng], df_wh[:,:elevation])
+        charger_points = hcat(charger_lon, charger_lat, charger_ele)
+        point_to_lla = x -> Geodesy.LLA(x[2], x[1], x[3])
+
+        way_point_lla = [point_to_lla(r) for r in eachrow(way_points)]
+        charger_point_lla = [point_to_lla(r) for r in eachrow(charger_points)]
+
+        distance_between_lla = (x, y) -> Geodesy.euclidean_distance(x, y)
+
+        charger_arr = []
+        for (i, c) in enumerate(charger_point_lla)
+            dist = df_wh[argmin([distance_between_lla(r[1], c) for r in eachrow(way_point_lla)]), :distance_km]
+            charge_used = df_wh[argmin([distance_between_lla(r[1], c) for r in eachrow(way_point_lla)]), :total_wh_used]
+            charge_used = round((charge_used / car_usable_wh) * 100; digits=1)
+            # @info charger_names[i], dist, charge_used
+            push!(charger_arr, [i, charger_names[i], dist, charge_used])
+        end
+
+        charger_string = x -> "$(x[1]). $(x[2]) at $(x[3]) km, needs $(x[4])% SoC\n"
+        charger_string_total = join(charger_string.(charger_arr), "\n")
+
+        params = Dict("chat_id"=>id, "text"=>string("The different chargers along the route are\n\n$charger_string_total"))
+
+        Telegram.send_message(params)
+
+        params = Dict("chat_id"=>id, "text"=>string("Estimated SoC required to complete the journey is $soc_used%."))
+
         Telegram.send_message(params)
 
         # params = Dict("chat_id"=>id, "text"=>string("Elevation profile"))
