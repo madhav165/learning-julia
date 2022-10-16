@@ -17,7 +17,6 @@ trip_table=ENV["TRIP_TABLE"]
 car_table=ENV["CAR_TABLE"]
 place_table=ENV["PLACE_TABLE"]
 charger_table=ENV["CHARGER_TABLE"]
-key=ENV["TELEGRAM_KEY"]
 
 conn = -1
 
