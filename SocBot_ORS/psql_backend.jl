@@ -4,8 +4,8 @@ using LibPQ
 using Tables
 using Dates
 
-# using DotEnv
-# DotEnv.config()
+using DotEnv
+DotEnv.config()
 
 # export conn, init_db, get_conn, update_contact_list, get_key, set_key, get_state, set_state
 
@@ -127,8 +127,8 @@ function get_car(table, id)
 end
 
 function init_db()
-    conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password host=database")
-    # conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password")
+    # conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password host=database")
+    conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password")
 
     result = execute(conn, """
         CREATE TABLE IF NOT EXISTS $user_table (
@@ -186,7 +186,7 @@ function init_db()
             elevation float
         );
         INSERT INTO $charger_table VALUES ('Brigade Orchirds - Devanahalli', 'Kurrent', 25, 13.23724626446745, 77.72430818875233, 906);
-        --INSERT INTO $charger_table VALUES ('Hotel Gangothri - Kodikonda', 'LionCharge', 24, 13.834520360801957, 77.74170515906907, 715);
+        INSERT INTO $charger_table VALUES ('Hotel Gangothri - Kodikonda', 'LionCharge', 24, 13.834520360801957, 77.74170515906907, 715);
         INSERT INTO $charger_table VALUES ('Exotikka Restaurant - Anantapur', 'LionCharge', 24, 14.65469801672688, 77.58183791508813, 356);
         INSERT INTO $charger_table VALUES ('Hotel Bluemoon Highway - Anantapur', 'Tata Power', 24, 15.027635174374792, 77.62079347109878, 323);
         --INSERT INTO $charger_table VALUES ('Matsya Amazon Kitchens - Kurnool', 'Tata Power', 25, 15.577069934453466, 77.9371242460447, 333);
@@ -196,6 +196,16 @@ function init_db()
         INSERT INTO $charger_table VALUES ('Hotel Raibow Continental - Rajapur', 'Zeon', 24, 16.870278867053663, 78.16403875802179, 544);
         INSERT INTO $charger_table VALUES ('Manjira Hotels & Resorts - Jadcherla', 'ChargeGrid', 50, 16.798052209484826, 78.14233020499024, 573);
         INSERT INTO $charger_table VALUES ('Croma - Attapur', 'Tata Power', 30, 17.366850824282807, 78.42847612437755, 510);
+        INSERT INTO $charger_table VALUES ('Croma - LB Nagar', 'Tata Power', 25, 17.35278648147443, 78.54663547019666, 511);
+        INSERT INTO $charger_table VALUES ('Hotel Highway 9 Grand - Bangarigadda', 'Joulepoint', 30, 17.24564876236031, 78.92106290033475, 351);
+        INSERT INTO $charger_table VALUES ('7 Midway Plaza Hotel - Chityala', 'Tata Power', 25, 17.23166856005191, 79.09938980058223, 333);
+        INSERT INTO $charger_table VALUES ('Vivera Hotel & Resorts - Narketpally', 'Tata Power', 25, 17.21156675720828, 79.16647800131311, 290);
+        INSERT INTO $charger_table VALUES ('Rajugari Thota Hotel - Suryapet', 'Tata Power', 25, 17.15389731084779, 79.55948210018258, 165);
+        INSERT INTO $charger_table VALUES ('7 Food Court - Suryapet', 'Tata Power', 25, 17.150794928203602, 79.57687289996694, 171);
+        INSERT INTO $charger_table VALUES ('Croma - Tadepalli', 'Tata Power', 60, 16.480277894228717, 80.61807666349753, 22);
+        INSERT INTO $charger_table VALUES ('MG Auto - Gudavalli Vijayawada', 'Tata Power', 30, 16.512646122982673, 80.7497048711214, 17);
+        INSERT INTO $charger_table VALUES ('IOCL - Kothapeta Guntur', 'Tata Power', 30, 16.430323703995764, 80.56576210907849, 28);
+
     """)
 
     close(conn)
@@ -205,8 +215,8 @@ end
 function get_conn()
     global conn
     if conn == -1
-        conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password host=database")
-        # conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password")
+        # conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password host=database")
+        conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password")
     end
     return conn
 end
