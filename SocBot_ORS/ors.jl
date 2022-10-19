@@ -73,11 +73,19 @@ function get_directions(origin_coordinates::Vector{Float64}, destination_coordin
     # df_wh.wh_per_km = 130 .+ (df_wh[!, "slope"] .* 5000)
 
     df_wh.slope = df_wh[!,"elevation_diff_m"] ./ df_wh[!,"dist_per_wp_m"]
-    df_wh.wh_per_km = ifelse.(df_wh[!,"slope"] .< 0, 47, 99 .+ df_wh[!,"slope"] .* 4355) #60 kmph
+
+    # df_wh.wh_per_km = ifelse.(df_wh[!,"slope"] .< 0, 47, 99 .+ df_wh[!,"slope"] .* 4355) #60 kmph
     # df_wh.wh_per_km = ifelse.(df_wh[!,"slope"] .< 0, 64, 116 .+ df_wh[!,"slope"] .* 4355) #70 kmph
     # df_wh.wh_per_km = ifelse.(df_wh[!,"slope"] .< 0, 83, 135 .+ df_wh[!,"slope"] .* 4355) #80 kmph
     # df_wh.wh_per_km = ifelse.(df_wh[!,"slope"] .< 0, 105, 157 .+ df_wh[!,"slope"] .* 4355) #90 kmph
     # df_wh.wh_per_km = ifelse.(df_wh[!,"slope"] .< 0, 130, 182 .+ df_wh[!,"slope"] .* 4355) #100 kmph
+
+    
+    # df_wh.wh_per_km = ifelse.(df_wh[!,"slope"] .< 0, 63, 115 .+ df_wh[!,"slope"] .* 4355) #60 kmph
+    # df_wh.wh_per_km = ifelse.(df_wh[!,"slope"] .< 0, 73, 125 .+ df_wh[!,"slope"] .* 4355) #70 kmph
+    # df_wh.wh_per_km = ifelse.(df_wh[!,"slope"] .< 0, 83, 135 .+ df_wh[!,"slope"] .* 4355) #80 kmph
+    # df_wh.wh_per_km = ifelse.(df_wh[!,"slope"] .< 0, 94, 146 .+ df_wh[!,"slope"] .* 4355) #90 kmph
+    df_wh.wh_per_km = ifelse.(df_wh[!,"slope"] .< 0, 104, 156 .+ df_wh[!,"slope"] .* 4355) #100 kmph
 
     df_wh.wh_used = df_wh[!, "wh_per_km"] .* df_wh[!, "dist_per_wp_m"] ./ 1000
     df_wh[isnan.(df_wh.wh_used), :wh_used] .= 0
