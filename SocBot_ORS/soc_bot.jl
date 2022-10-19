@@ -6,8 +6,8 @@ using Geodesy
 using DataFrames
 using CSV
 
-using DotEnv
-DotEnv.config()
+# using DotEnv
+# DotEnv.config()
 
 #include("white_backend.jl")
 include("psql_backend.jl")
