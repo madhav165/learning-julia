@@ -4,8 +4,8 @@ using LibPQ
 using Tables
 using Dates
 
-# using DotEnv
-# DotEnv.config()
+using DotEnv
+DotEnv.config()
 
 # export conn, init_db, get_conn, update_contact_list, get_key, set_key, get_state, set_state
 
@@ -127,8 +127,8 @@ function get_car(table, id)
 end
 
 function init_db()
-    conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password host=database")
-    # conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password")
+    # conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password host=database")
+    conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password")
 
     result = execute(conn, """
         CREATE TABLE IF NOT EXISTS $user_table (
@@ -215,8 +215,8 @@ end
 function get_conn()
     global conn
     if conn == -1
-        conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password host=database")
-        # conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password")
+        # conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password host=database")
+        conn = LibPQ.Connection("dbname=$postgres_db user=$postgres_user password=$postgres_password")
     end
     return conn
 end
