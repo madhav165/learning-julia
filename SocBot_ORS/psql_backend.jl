@@ -205,6 +205,12 @@ function init_db()
         INSERT INTO $charger_table VALUES ('Croma - Tadepalli', 'Tata Power', 60, 16.480277894228717, 80.61807666349753, 22);
         INSERT INTO $charger_table VALUES ('MG Auto - Gudavalli Vijayawada', 'Tata Power', 30, 16.512646122982673, 80.7497048711214, 17);
         INSERT INTO $charger_table VALUES ('IOCL - Kothapeta Guntur', 'Tata Power', 30, 16.430323703995764, 80.56576210907849, 28);
+        INSERT INTO $charger_table VALUES ('Paakashala - Koppa', 'Zeon', 50, 12.990417195565373, 76.8818227878299, 766);
+        INSERT INTO $charger_table VALUES ('Hotel Mayur Veg - Yediyur', 'Zeon', 50, 12.98786521642311, 76.87471165574817, 762);
+        INSERT INTO $charger_table VALUES ('NH75 Toll - Shantigrama', 'Relux', 80, 12.981740048057626, 76.23001368546582, 932);
+        INSERT INTO $charger_table VALUES ('Hotel Sky Bird - Hassan', 'Zeon', 24, 12.987204142808821, 76.20590453108099, 943);
+        INSERT INTO $charger_table VALUES ('TML Auto Matrix - Hassan', 'Tata Power', 30, 12.995340741743876, 76.0797614154368, 941);
+        INSERT INTO $charger_table VALUES ('Gateway Hotel - Chikmagalur', 'Tata Power', 25, 13.33692841534074, 75.81750591635092, 1086);
 
     """)
 
