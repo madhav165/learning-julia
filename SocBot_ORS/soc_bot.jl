@@ -194,6 +194,8 @@ The route has a total elevation gain of $total_ascent m and elevation loss of $t
 
         Telegram.send_message(params)
 
+        # ----
+
         target_destination_soc = 0.3
         target_charger_soc = 0.2
 
@@ -203,13 +205,18 @@ The route has a total elevation gain of $total_ascent m and elevation loss of $t
             charging_msg_arr = ["$distance_text: Reach $destination with $(trunc(Int, target_destination_soc*100))% SoC remaining"]
 
             starting_soc = (soc_used .- charger_arr[:,3]) .+ (target_destination_soc * 100)
-
+            
             while starting_soc[1] > 100
                 charger_index = findfirst(x -> x==maximum(starting_soc[starting_soc.<90]), starting_soc)
                 charger = charger_arr[charger_index, :]
                 charging_msg = "$(charger[2]) km: Reach $(charger[1]) with $(trunc(Int, target_charger_soc * 100))% SoC and charge to $(trunc(Int, starting_soc[charger_index]))% SoC."
                 push!(charging_msg_arr, charging_msg)
+                old_starting_soc = starting_soc
                 starting_soc = (charger_arr[charger_index, 3] .- charger_arr[:,3]) .+ (target_charger_soc * 100)
+                if old_starting_soc == starting_soc
+                    break
+                end
+                @info "old_starting_soc=$old_starting_soc, starting_soc=$starting_soc"
             end
 
             charging_msg = "$(charger_arr[1,2]) km: Start at $origin with $(trunc(Int, starting_soc[1] + charger_arr[1,3]))% SoC."
@@ -218,7 +225,9 @@ The route has a total elevation gain of $total_ascent m and elevation loss of $t
             reverse!(charging_msg_arr)
 
             charging_msg = join(charging_msg_arr, "\n\n")
+            @info charging_msg
         end
+
 
         params = Dict("chat_id"=>id, "text"=>string(charging_msg))
         Telegram.send_message(params)
@@ -226,8 +235,10 @@ The route has a total elevation gain of $total_ascent m and elevation loss of $t
         params = Dict("chat_id"=>id, "text"=>string("Total estimated SoC for the drive is $(trunc(Int, soc_used))%."))
         Telegram.send_message(params)
 
-        # params = Dict("chat_id"=>id, "text"=>string("Elevation profile"))
-        # Telegram.send_message(params)
+        # ----
+
+        params = Dict("chat_id"=>id, "text"=>string("Elevation profile"))
+        Telegram.send_message(params)
 
         open("elevation_$current_trip_id.png") do io
             params = Dict("chat_id"=>id, "photo"=>io)
